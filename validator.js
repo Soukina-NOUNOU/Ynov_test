@@ -70,17 +70,36 @@ export function validatePostalCode(postalCode) {
 
 /**
  * Validate first name and last name
- * @param {Object} {firstName, lastName} The first and last name.
+ * @param {string} name The name to validate.
  * @returns {Object|null} An error object if the first name or last name is invalid, or null if they are valid.
  */
-export function validateName({firstName, lastName}) {
-    const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿœŒÆæ\s-]+$/;
-    if(!nameRegex.test(firstName)) {
-        throw new Error('Not valid first name')
+export function validateIdentity(name) {
+    if (typeof name !== "string" || name.trim().length === 0) {
+      return {
+        code: "INVALID_IDENTITY",
+        message: "Name must not contain digits or invalid characters.",
+      };
     }
-    if(!nameRegex.test(lastName)) {
-        throw new Error('Not valid last name')
+
+    // Simple XSS detection: check for common XSS attack vectors
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("<script") || lowerName.includes("</script>") || /<[^>]+>/.test(name)) {
+        return {
+            code: "XSS_DETECTED",
+            message: "Potential XSS content detected in name.",
+        };
     }
+
+    //Allow letters, spaces, hyphens and apostrophes
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s-]+$/;
+    if (!regex.test(name)) {
+      return {
+        code: "INVALID_IDENTITY",
+        message: "Name must not contain digits or invalid characters.",
+      };
+    }
+
+    return null;
 }
 
 /**

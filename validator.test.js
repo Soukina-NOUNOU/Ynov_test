@@ -1,5 +1,6 @@
 import { validateAge } from './validator.js';
 import { validatePostalCode } from './validator.js';
+import { validateIdentity } from './validator.js';
 
 
 describe('validateAge', () => {
@@ -61,6 +62,38 @@ describe("validatePostalCode", () => {
     expect(validatePostalCode("34A00")).toEqual({
       code: "INVALID_POSTAL_CODE",
       message: "Postal code must be exactly 5 digits.",
+    });
+  });
+});
+
+
+describe("validateIdentity", () => {
+
+  it("should return null for a valid name", () => {
+    expect(validateIdentity("Jean Dupont")).toBeNull();
+    expect(validateIdentity("Anne-Marie")).toBeNull();
+    expect(validateIdentity("Éloïse")).toBeNull();
+  });
+
+  it("should return error if name contains digits", () => {
+    expect(validateIdentity("Jean2")).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Name must not contain digits or invalid characters.",
+    });
+  });
+
+  it("should return error if name contains disallowed special characters", () => {
+    expect(validateIdentity("Jean@Dupont")).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Name must not contain digits or invalid characters.",
+    });
+  });
+
+  it("should return error if name contains potential XSS", () => {
+
+    expect(validateIdentity("<script>alert('xss')</script>")).toEqual({
+      code: "XSS_DETECTED",
+      message: "Potential XSS content detected in name.",
     });
   });
 });
