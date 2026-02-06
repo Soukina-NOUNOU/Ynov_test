@@ -108,8 +108,22 @@ export function validateIdentity(name) {
  * @returns {Object|null} An error object if the email address is invalid, or null if it is valid.
  */
 export function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if(!emailRegex.test(email)) {
-        throw new Error('Not valid email address')
+    // Check if email is a string
+    if (typeof email !== "string") {
+      return {
+        code: "INVALID_EMAIL",
+        message: "Email must be a valid email address.",
+      };
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Check if email is in a valid format
+    if (!emailRegex.test(email)) {
+      return {
+        code: "INVALID_EMAIL",
+        message: "Email must be a valid email address.",
+      };
+    }
+
+    return null;
 }

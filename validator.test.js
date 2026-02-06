@@ -1,6 +1,7 @@
 import { validateAge } from './validator.js';
 import { validatePostalCode } from './validator.js';
 import { validateIdentity } from './validator.js';
+import { validateEmail } from './validator.js';
 
 
 describe('validateAge', () => {
@@ -96,4 +97,33 @@ describe("validateIdentity", () => {
       message: "Potential XSS content detected in name.",
     });
   });
+});
+
+
+describe("validateEmail", () => {
+
+  it("should return null for a valid email", () => {
+    expect(validateEmail("test@example.com")).toBeNull();
+    expect(validateEmail("test.user+test@sub.domain.fr")).toBeNull();
+  });
+
+  it("should return error for invalid email formats", () => {
+
+    expect(validateEmail("invalid-email")).toEqual({
+      code: "INVALID_EMAIL",
+      message: "Email must be a valid email address.",
+    });
+
+    expect(validateEmail("test@")).toEqual({
+      code: "INVALID_EMAIL",
+      message: "Email must be a valid email address.",
+    });
+
+    expect(validateEmail("@fakedomaine.com")).toEqual({
+      code: "INVALID_EMAIL",
+      message: "Email must be a valid email address.",
+    });
+
+  });
+
 });
