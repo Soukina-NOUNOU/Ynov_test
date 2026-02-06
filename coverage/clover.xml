@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1770377781536" clover="3.2.0">
+  <project timestamp="1770377781536" name="All files">
+    <metrics statements="17" coveredstatements="17" conditionals="14" coveredconditionals="14" methods="1" coveredmethods="1" elements="32" coveredelements="32" complexity="0" loc="17" ncloc="17" packages="1" files="1" classes="1"/>
+    <file name="module.js" path="/Users/soukinanounou/Desktop/Cours/Test et Test unitaire/Cours 1/Ynov_test/module.js">
+      <metrics statements="17" coveredstatements="17" conditionals="14" coveredconditionals="14" methods="1" coveredmethods="1"/>
+      <line num="9" count="10" type="cond" truecount="2" falsecount="0"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="13" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="14" count="1" type="stmt"/>
+      <line num="17" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="18" count="1" type="stmt"/>
+      <line num="21" count="7" type="cond" truecount="2" falsecount="0"/>
+      <line num="22" count="1" type="stmt"/>
+      <line num="25" count="6" type="cond" truecount="2" falsecount="0"/>
+      <line num="26" count="1" type="stmt"/>
+      <line num="29" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="30" count="1" type="stmt"/>
+      <line num="33" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="34" count="1" type="stmt"/>
+      <line num="37" count="3" type="stmt"/>
+      <line num="38" count="3" type="stmt"/>
+      <line num="39" count="3" type="stmt"/>
+    </file>
+  </project>
+</coverage>
