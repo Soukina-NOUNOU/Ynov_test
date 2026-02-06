@@ -18,9 +18,16 @@ export default function calculateAge(p) {
         throw error;
     }
 
-    if(!p.birth) {
+    if(!('birth' in p)) {
         const error = new Error("birth property is missing");
         error.code = 'MISSING_BIRTH_PROPERTY';
+        throw error;
+    }
+
+    if(p.birth === null || p.birth === undefined) {
+        const error = new Error('Not valid birth date');
+        error.code = 'INVALID_BIRTH_DATE';
+        error.message = 'Not valid birth date';
         throw error;
     }
 

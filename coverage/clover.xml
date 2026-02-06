@@ -1,49 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770388268606" clover="3.2.0">
-  <project timestamp="1770388268606" name="All files">
-    <metrics statements="61" coveredstatements="61" conditionals="35" coveredconditionals="35" methods="4" coveredmethods="4" elements="100" coveredelements="100" complexity="0" loc="61" ncloc="61" packages="1" files="2" classes="2"/>
+<coverage generated="1770388968246" clover="3.2.0">
+  <project timestamp="1770388968246" name="All files">
+    <metrics statements="66" coveredstatements="66" conditionals="39" coveredconditionals="39" methods="4" coveredmethods="4" elements="109" coveredelements="109" complexity="0" loc="66" ncloc="66" packages="1" files="2" classes="2"/>
     <file name="module.js" path="/Users/soukinanounou/Desktop/Cours/Test et Test unitaire/Cours 1/Ynov_test/module.js">
-      <metrics statements="40" coveredstatements="40" conditionals="16" coveredconditionals="16" methods="1" coveredmethods="1"/>
-      <line num="9" count="15" type="cond" truecount="2" falsecount="0"/>
+      <metrics statements="45" coveredstatements="45" conditionals="20" coveredconditionals="20" methods="1" coveredmethods="1"/>
+      <line num="9" count="22" type="cond" truecount="2" falsecount="0"/>
       <line num="10" count="1" type="stmt"/>
       <line num="11" count="1" type="stmt"/>
       <line num="12" count="1" type="stmt"/>
-      <line num="15" count="14" type="cond" truecount="2" falsecount="0"/>
+      <line num="15" count="21" type="cond" truecount="2" falsecount="0"/>
       <line num="16" count="1" type="stmt"/>
       <line num="17" count="1" type="stmt"/>
       <line num="18" count="1" type="stmt"/>
-      <line num="21" count="13" type="cond" truecount="2" falsecount="0"/>
+      <line num="21" count="20" type="cond" truecount="2" falsecount="0"/>
       <line num="22" count="1" type="stmt"/>
       <line num="23" count="1" type="stmt"/>
       <line num="24" count="1" type="stmt"/>
-      <line num="27" count="12" type="cond" truecount="2" falsecount="0"/>
-      <line num="28" count="2" type="stmt"/>
-      <line num="29" count="2" type="stmt"/>
-      <line num="30" count="2" type="stmt"/>
-      <line num="31" count="2" type="stmt"/>
-      <line num="34" count="10" type="cond" truecount="2" falsecount="0"/>
+      <line num="27" count="19" type="cond" truecount="4" falsecount="0"/>
+      <line num="28" count="4" type="stmt"/>
+      <line num="29" count="4" type="stmt"/>
+      <line num="30" count="4" type="stmt"/>
+      <line num="31" count="4" type="stmt"/>
+      <line num="34" count="15" type="cond" truecount="2" falsecount="0"/>
       <line num="35" count="2" type="stmt"/>
       <line num="36" count="2" type="stmt"/>
       <line num="37" count="2" type="stmt"/>
       <line num="38" count="2" type="stmt"/>
-      <line num="41" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="41" count="13" type="cond" truecount="2" falsecount="0"/>
       <line num="42" count="2" type="stmt"/>
       <line num="43" count="2" type="stmt"/>
       <line num="44" count="2" type="stmt"/>
       <line num="45" count="2" type="stmt"/>
-      <line num="48" count="6" type="cond" truecount="2" falsecount="0"/>
-      <line num="49" count="1" type="stmt"/>
-      <line num="50" count="1" type="stmt"/>
-      <line num="51" count="1" type="stmt"/>
-      <line num="52" count="1" type="stmt"/>
-      <line num="55" count="5" type="stmt"/>
-      <line num="56" count="5" type="stmt"/>
-      <line num="59" count="5" type="cond" truecount="2" falsecount="0"/>
-      <line num="60" count="1" type="stmt"/>
-      <line num="61" count="1" type="stmt"/>
-      <line num="62" count="1" type="stmt"/>
-      <line num="63" count="1" type="stmt"/>
-      <line num="66" count="4" type="stmt"/>
+      <line num="48" count="11" type="cond" truecount="2" falsecount="0"/>
+      <line num="49" count="2" type="stmt"/>
+      <line num="50" count="2" type="stmt"/>
+      <line num="51" count="2" type="stmt"/>
+      <line num="52" count="2" type="stmt"/>
+      <line num="55" count="9" type="cond" truecount="2" falsecount="0"/>
+      <line num="56" count="1" type="stmt"/>
+      <line num="57" count="1" type="stmt"/>
+      <line num="58" count="1" type="stmt"/>
+      <line num="59" count="1" type="stmt"/>
+      <line num="62" count="8" type="stmt"/>
+      <line num="63" count="8" type="stmt"/>
+      <line num="66" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="67" count="1" type="stmt"/>
+      <line num="68" count="1" type="stmt"/>
+      <line num="69" count="1" type="stmt"/>
+      <line num="70" count="1" type="stmt"/>
+      <line num="73" count="7" type="stmt"/>
     </file>
     <file name="validator.js" path="/Users/soukinanounou/Desktop/Cours/Test et Test unitaire/Cours 1/Ynov_test/validator.js">
       <metrics statements="21" coveredstatements="21" conditionals="19" coveredconditionals="19" methods="3" coveredmethods="3"/>
@@ -53,15 +58,15 @@
       <line num="16" count="4" type="cond" truecount="2" falsecount="0"/>
       <line num="17" count="3" type="stmt"/>
       <line num="22" count="1" type="stmt"/>
-      <line num="31" count="9" type="cond" truecount="4" falsecount="0"/>
+      <line num="31" count="13" type="cond" truecount="4" falsecount="0"/>
       <line num="32" count="3" type="stmt"/>
-      <line num="39" count="6" type="stmt"/>
-      <line num="40" count="6" type="cond" truecount="5" falsecount="0"/>
-      <line num="41" count="1" type="stmt"/>
-      <line num="48" count="5" type="stmt"/>
-      <line num="49" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="39" count="10" type="stmt"/>
+      <line num="40" count="10" type="cond" truecount="5" falsecount="0"/>
+      <line num="41" count="3" type="stmt"/>
+      <line num="48" count="7" type="stmt"/>
+      <line num="49" count="7" type="cond" truecount="2" falsecount="0"/>
       <line num="50" count="2" type="stmt"/>
-      <line num="56" count="3" type="stmt"/>
+      <line num="56" count="5" type="stmt"/>
       <line num="66" count="7" type="cond" truecount="2" falsecount="0"/>
       <line num="67" count="2" type="stmt"/>
       <line num="73" count="5" type="stmt"/>

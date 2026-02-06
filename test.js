@@ -61,5 +61,30 @@ describe('calculateAge Unit Test Suites', () => {
         expect(calculateAge(people20years)).toEqual(20)
     })
 
+    // Test edge cases for leap years and date boundaries
+    it('should handle leap year correctly (29 February)', () => {
+        const user = {
+            birth: new Date('2000-02-29') // Leap year
+        }
+        expect(calculateAge(user)).toBeGreaterThan(0);
+    })
+
+    it('should handle person born on leap day when current year is not leap year', () => {
+        const dateNow = Date.now;
+        Date.now = () => new Date('2023-03-01').getTime(); // 2023 is not a leap year
+        expect(calculateAge({
+            birth: new Date('2000-02-29')
+        })).toBe(23);
+        Date.now = dateNow;
+    })
+
+    it('should handle null object property', () => {
+        expect(() => calculateAge({birth: null})).toThrow('Not valid birth date');
+    })
+
+    it('should handle undefined birth property in object', () => {
+        expect(() => calculateAge({birth: undefined})).toThrow('Not valid birth date');
+    })
+
 
 });

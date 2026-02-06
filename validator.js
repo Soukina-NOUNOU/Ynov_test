@@ -45,7 +45,7 @@ export function validateIdentity(name) {
     }
 
     //Allow letters, spaces, hyphens and apostrophes
-    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s-]+$/;
+    const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s-']+$/;
     if (!regex.test(name)) {
       return {
         code: "INVALID_IDENTITY",

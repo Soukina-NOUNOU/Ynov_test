@@ -40,6 +40,26 @@ describe('calculateAge', () => {
             message: 'It is impossible to be born in the future'
         });
     })
+
+    // Tests edge cases spécifiques
+    it("should handle leap year dates correctly", () => {
+        const person = { birth: new Date('2000-02-29') };
+        expect(calculateAge(person)).toBeGreaterThan(18);
+    })
+
+    it("should throw error for null birth property", () => {
+        expect(() => calculateAge({ birth: null })).toThrow({
+            code: 'INVALID_BIRTH_DATE',
+            message: 'Not valid birth date'
+        });
+    })
+
+    it("should throw error for undefined birth property", () => {
+        expect(() => calculateAge({ birth: undefined })).toThrow({
+            code: 'INVALID_BIRTH_DATE', 
+            message: 'Not valid birth date'
+        });
+    })
 })
 
 
@@ -131,6 +151,23 @@ describe("validateIdentity", () => {
     });
 
  });
+
+  it("should handle various XSS attack vectors", () => {
+    expect(validateIdentity("<img src=x onerror=alert('xss')>")).toEqual({
+      code: "XSS_DETECTED",
+      message: "Potential XSS content detected in name.",
+    });
+    
+    expect(validateIdentity("<span>not allowed</span>")).toEqual({
+      code: "XSS_DETECTED",
+      message: "Potential XSS content detected in name.",
+    });
+  });
+
+  it("should handle edge case names with accents and special characters", () => {
+    expect(validateIdentity("Jean-Marie García")).toBeNull();
+    expect(validateIdentity("O'Macfly")).toBeNull();
+  });
 
 });
 
