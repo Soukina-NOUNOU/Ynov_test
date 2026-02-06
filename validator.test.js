@@ -1,4 +1,6 @@
 import { validateAge } from './validator.js';
+import { validatePostalCode } from './validator.js';
+
 
 describe('validateAge', () => {
     it('should return null for a valid adult birth date', () => {
@@ -37,3 +39,28 @@ describe('validateAge', () => {
         })
     })
 })
+
+
+describe("validatePostalCode", () => {
+  it("soould return null for a valid French postal code", () => {
+    expect(validatePostalCode("34000")).toBeNull();
+  });
+
+  it("should return error if postal code is not 5 digits", () => {
+    expect(validatePostalCode("3400")).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Postal code must be exactly 5 digits.",
+    });
+    expect(validatePostalCode("340000")).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Postal code must be exactly 5 digits.",
+    });
+  });
+
+  it("should return error if postal code contains non-digit characters", () => {
+    expect(validatePostalCode("34A00")).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Postal code must be exactly 5 digits.",
+    });
+  });
+});

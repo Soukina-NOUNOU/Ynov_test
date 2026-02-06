@@ -50,10 +50,22 @@ export function validateAge(birth) {
  * @returns {Object|null} An error object if the postal code is invalid, or null if it is valid.
  */
 export function validatePostalCode(postalCode) {
-    const postalCodeRegex = /^\d{5}$/;
-    if(!postalCodeRegex.test(postalCode)) {
-        throw new Error('Not valid postal code')
+    // Check if postal code is a string
+    if (typeof postalCode !== "string") {
+      return {
+        code: "INVALID_POSTAL_CODE",
+        message: "Postal code must be exactly 5 digits.",
+      };
     }
+    const regex = /^[0-9]{5}$/;
+    // Check if postal code is exactly 5 digits
+    if (!regex.test(postalCode)) {
+      return {
+        code: "INVALID_POSTAL_CODE",
+        message: "Postal code must be exactly 5 digits.",
+      };
+    }
+    return null;
 }
 
 /**

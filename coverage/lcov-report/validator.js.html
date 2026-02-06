@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.57% </span>
+                <span class="strong">76.31% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>24/35</span>
+                <span class='fraction'>29/38</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">61.11% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>11/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">50% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>8/16</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">68.57% </span>
+                <span class="strong">76.31% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>24/35</span>
+                <span class='fraction'>29/38</span>
             </div>
         
             
@@ -144,7 +144,21 @@
 <a name='L79'></a><a href='#L79'>79</a>
 <a name='L80'></a><a href='#L80'>80</a>
 <a name='L81'></a><a href='#L81'>81</a>
-<a name='L82'></a><a href='#L82'>82</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,6 +182,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -177,6 +192,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -194,10 +210,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -232,7 +260,7 @@
  */
 &nbsp;
 export function validateAge(birth) {
-    // Vérifier si c'est une Date
+    // Check if birth is a Date conform
     if(!(birth instanceof Date)) {
         const error = new Error('Not valid birth date');
         error.code = 'INVALID_BIRTH_DATE';
@@ -240,7 +268,7 @@ export function validateAge(birth) {
         throw error;
     }
     
-    // Vérifier si la date est valide (pas NaN)
+    // Check if birth is a valid date
     if(isNaN(birth.getTime())) {
         const error = new Error('This date is impossible');
         error.code = 'INVALID_BIRTH_DATE';
@@ -249,6 +277,7 @@ export function validateAge(birth) {
     }
 &nbsp;
     const now = new Date();
+    //Check if birth is in the future
     if(birth &gt; now) {
         const error = new Error('It is impossible to be born in the future');
         error.code = 'INVALID_BIRTH_DATE';
@@ -258,6 +287,7 @@ export function validateAge(birth) {
 &nbsp;
     const differents = new Date(now - birth);
     const age = Math.abs(differents.getUTCFullYear() - 1970);
+    // Check if birth is too far in the past
     if(age &lt; 18) {
         const error = new Error('User must be at least 18 years old');
         error.code = 'AGE_TOO_YOUNG';
@@ -274,11 +304,23 @@ export function validateAge(birth) {
  * @param {string} postalCode The postal code to validate.
  * @returns {Object|null} An error object if the postal code is invalid, or null if it is valid.
  */
-export function <span class="fstat-no" title="function not covered" >validatePostalCode(</span>postalCode) {
-    const postalCodeRegex = <span class="cstat-no" title="statement not covered" >/^\d{5}$/;</span>
-<span class="cstat-no" title="statement not covered" >    if(!postalCodeRegex.test(postalCode)) {</span>
-<span class="cstat-no" title="statement not covered" >        throw new Error('Not valid postal code')</span>
+export function validatePostalCode(postalCode) {
+    // Check if postal code is a string
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof postalCode !== "string") {
+<span class="cstat-no" title="statement not covered" >      return {</span>
+        code: "INVALID_POSTAL_CODE",
+        message: "Postal code must be exactly 5 digits.",
+      };
     }
+    const regex = /^[0-9]{5}$/;
+    // Check if postal code is exactly 5 digits
+    if (!regex.test(postalCode)) {
+      return {
+        code: "INVALID_POSTAL_CODE",
+        message: "Postal code must be exactly 5 digits.",
+      };
+    }
+    return null;
 }
 &nbsp;
 /**
@@ -313,7 +355,7 @@ export function <span class="fstat-no" title="function not covered" >validateEma
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-06T13:50:46.497Z
+                at 2026-02-06T13:55:36.993Z
             </div>
         <script src="prettify.js"></script>
         <script>
