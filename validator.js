@@ -5,9 +5,43 @@
  */
 
 export function validateAge(birth) {
+    // Check if birth is a Date conform
     if(!(birth instanceof Date)) {
-        throw new Error('Not valid birth date')
+        const error = new Error('Not valid birth date');
+        error.code = 'INVALID_BIRTH_DATE';
+        error.message = 'Not valid birth date';
+        throw error;
     }
+    
+    // Check if birth is a valid date
+    if(isNaN(birth.getTime())) {
+        const error = new Error('This date is impossible');
+        error.code = 'INVALID_BIRTH_DATE';
+        error.message = 'This date is impossible';
+        throw error;
+    }
+
+    const now = new Date();
+    //Check if birth is in the future
+    if(birth > now) {
+        const error = new Error('It is impossible to be born in the future');
+        error.code = 'INVALID_BIRTH_DATE';
+        error.message = 'It is impossible to be born in the future';
+        throw error;
+    }
+
+    const differents = new Date(now - birth);
+    const age = Math.abs(differents.getUTCFullYear() - 1970);
+    // Check if birth is too far in the past
+    if(age < 18) {
+        const error = new Error('User must be at least 18 years old');
+        error.code = 'AGE_TOO_YOUNG';
+        error.message = 'User must be at least 18 years old';
+        throw error;
+    }
+    
+    // If everything is valid, return null
+    return null;
 }
 
 /**
