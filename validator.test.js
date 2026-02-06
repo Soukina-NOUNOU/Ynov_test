@@ -65,6 +65,20 @@ describe("validatePostalCode", () => {
       message: "Postal code must be exactly 5 digits.",
     });
   });
+
+  it("shoould return error if postal code is not a string", () => {
+    
+    expect(validatePostalCode(12345)).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Postal code must be exactly 5 digits.",
+    });
+
+    expect(validatePostalCode(null)).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Postal code must be exactly 5 digits.",
+    });
+
+  });
 });
 
 
@@ -97,6 +111,27 @@ describe("validateIdentity", () => {
       message: "Potential XSS content detected in name.",
     });
   });
+
+  it("should return error if name is not a string or is empty", () => {
+    
+    expect(validateIdentity(12345)).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Name must not contain digits or invalid characters.",
+    });
+
+    expect(validateIdentity("")).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Name must not contain digits or invalid characters.",
+    });
+
+    expect(validateIdentity("   ")).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Name must not contain digits or invalid characters.",
+    
+    });
+
+ });
+ 
 });
 
 
@@ -124,6 +159,17 @@ describe("validateEmail", () => {
       message: "Email must be a valid email address.",
     });
 
+  });
+
+  it("should return error if email is not a string", () => {
+    expect(validateEmail(12345)).toEqual({
+      code: "INVALID_EMAIL",
+      message: "Email must be a valid email address.",
+    });
+    expect(validateEmail(null)).toEqual({
+      code: "INVALID_EMAIL",
+      message: "Email must be a valid email address.",
+    });
   });
 
 });
