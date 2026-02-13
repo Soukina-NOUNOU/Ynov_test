@@ -11,6 +11,10 @@ export default function RegistrationForm() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    email: "",
+    birth: "",
+    city: "",
+    postalCode: "",
   });
   const [errors, setErrors] = useState({});
   const [showToaster, setShowToaster] = useState(false);
@@ -25,6 +29,29 @@ export default function RegistrationForm() {
         const identityError = validateIdentity(value);
         if (identityError) error = identityError.message;
         break;
+      case "email":
+        const emailError = validateEmail(value);
+        if (emailError) error = emailError.message;
+        break;
+      case "birth":
+        if (!value) {
+          error = "La date de naissance est obligatoire";
+        } else {
+          try {
+            calculateAge({ birth: new Date(value) });
+          } catch (err) {
+            error = err.message;
+          }
+        }
+        break;
+      case "postalCode":
+        const postalError = validatePostalCode(value);
+        if (postalError) error = postalError.message;
+        break;
+      case "city":
+        const cityError = validateIdentity(value);
+        if (cityError) error = cityError.message;
+        break;
     }
 
     return error;
@@ -33,7 +60,12 @@ export default function RegistrationForm() {
   // Check if the form is valid
   const isFormValid = () => {
     const hasAllFields =
-      form.firstName && form.lastName
+      form.firstName &&
+      form.lastName &&
+      form.email &&
+      form.birth &&
+      form.city &&
+      form.postalCode;
     const hasNoErrors =
       Object.keys(errors).length === 0 || Object.values(errors).every((error) => !error);
     return hasAllFields && hasNoErrors;
@@ -84,6 +116,44 @@ export default function RegistrationForm() {
       newErrors.lastName = lastNameError.message;
       localStorage.setItem("error_lastName", lastNameError.message);
     }
+
+    // Validate email
+    const emailError = validateEmail(form.email);
+    if (emailError) {
+      newErrors.email = emailError.message;
+      localStorage.setItem("error_email", emailError.message);
+    }
+
+    // Validate birthdate
+    if (!form.birth) {
+      newErrors.birth = "La date de naissance est obligatoire";
+      localStorage.setItem(
+        "error_birth",
+        "La date de naissance est obligatoire",
+      );
+    } else {
+      try {
+        calculateAge({ birth: new Date(form.birth) });
+      } catch (err) {
+        newErrors.birth = err.message;
+        localStorage.setItem("error_birth", err.message);
+      }
+    }
+
+    // Validate postal code
+    const postalCodeError = validatePostalCode(form.postalCode);
+    if (postalCodeError) {
+      newErrors.postalCode = postalCodeError.message;
+      localStorage.setItem("error_postalCode", postalCodeError.message);
+    }
+
+    // Validate city
+    const cityError = validateIdentity(form.city);
+    if (cityError) {
+      newErrors.city = cityError.message;
+      localStorage.setItem("error_city", cityError.message);
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -102,10 +172,14 @@ export default function RegistrationForm() {
     setForm({
       firstName: "",
       lastName: "",
+      email: "",
+      birth: "",
+      city: "",
+      postalCode: "",
     });
     setErrors({});
 
-    // Clean up localStorage for errors
+    // Clear localStorage errors
     Object.keys(form).forEach((key) => {
       localStorage.removeItem(`error_${key}`);
     });
@@ -153,6 +227,52 @@ export default function RegistrationForm() {
           className={errors.lastName ? "error-input" : ""}
         />
         {errors.lastName && <p className="error">{errors.lastName}</p>}
+
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.email ? "error-input" : ""}
+        />
+        {errors.email && <p className="error">{errors.email}</p>}
+
+        <label htmlFor="birth">Date de naissance</label>
+        <input
+          id="birth"
+          type="date"
+          name="birth"
+          value={form.birth}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.birth ? "error-input" : ""}
+        />
+        {errors.birth && <p className="error">{errors.birth}</p>}
+
+        <label htmlFor="city">Ville</label>
+        <input
+          id="city"
+          name="city"
+          value={form.city}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.city ? "error-input" : ""}
+        />
+        {errors.city && <p className="error">{errors.city}</p>}
+
+        <label htmlFor="postalCode">Code postal</label>
+        <input
+          id="postalCode"
+          name="postalCode"
+          value={form.postalCode}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.postalCode ? "error-input" : ""}
+        />
+        {errors.postalCode && <p className="error">{errors.postalCode}</p>}
 
         <button
           type="submit"

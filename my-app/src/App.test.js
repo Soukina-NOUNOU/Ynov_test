@@ -7,9 +7,13 @@ test('renders registration form', () => {
   expect(registrationTitle).toBeInTheDocument();
 });
 
-test('renders registration form with firstname and lastname required fields', () => {
+test('renders registration form with all required fields', () => {
   render(<App />);
   expect(screen.getByLabelText('Prénom')).toBeInTheDocument();
   expect(screen.getByLabelText('Nom')).toBeInTheDocument();
+  expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/date de naissance/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/ville/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/code postal/i)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /s'enregistrer/i })).toBeInTheDocument();
 });

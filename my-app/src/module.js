@@ -46,9 +46,9 @@ export default function calculateAge(p) {
     }
 
     if(p.birth.getTime() > Date.now()) {
-        const error = new Error('It is impossible to be born in the future');
+        const error = new Error('Il est impossible de renseigner une date de naissance dans le futur');
         error.code = 'INVALID_BIRTH_DATE';
-        error.message = 'It is impossible to be born in the future';
+        error.message = 'Il est impossible de renseigner une date de naissance dans le futur';
         throw error;
     }
 
@@ -64,9 +64,9 @@ export default function calculateAge(p) {
     
     // Ajouter la vérification d'âge minimum si nécessaire
     if(age < 18) {
-        const error = new Error('User must be at least 18 years old');
+        const error = new Error('L\'utilisateur doit avoir au moins 18 ans');
         error.code = 'AGE_TOO_YOUNG';
-        error.message = 'User must be at least 18 years old';
+        error.message = 'L\'utilisateur doit avoir au moins 18 ans';
         throw error;
     }
     

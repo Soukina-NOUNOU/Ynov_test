@@ -40,7 +40,7 @@ describe('calculateAge Unit Test Suites', () => {
     })
 
     it('should throws if birth is in the future', () => {
-        expect(() => calculateAge({birth: new Date(Date.now() + 100000)})).toThrow('It is impossible to be born in the future')
+        expect(() => calculateAge({birth: new Date(Date.now() + 100000)})).toThrow('Il est impossible de renseigner une date de naissance dans le futur')
     })
 
     it('sould throws if birth is too far in the past', () => {

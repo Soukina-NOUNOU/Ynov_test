@@ -16,7 +16,7 @@ describe('calculateAge', () => {
         const birth = new Date(now.getFullYear() - 17, now.getMonth(), now.getDate());
         expect(() => calculateAge({ birth: birth })).toThrow({
             code: 'AGE_TOO_YOUNG',
-            message: 'User must be at least 18 years old'
+            message: 'L\'utilisateur doit avoir au moins 18 ans'
         });
     })
 
@@ -37,7 +37,7 @@ describe('calculateAge', () => {
     it("should throw error if birthDate is in the future", () => {
         expect(() => calculateAge({ birth: new Date(Date.now() + 100000) })).toThrow({
             code: 'INVALID_BIRTH_DATE',
-            message: 'It is impossible to be born in the future'
+            message: 'Il est impossible de renseigner une date de naissance dans le futur'
         });
     })
 
@@ -71,18 +71,18 @@ describe("validatePostalCode", () => {
   it("should return error if postal code is not 5 digits", () => {
     expect(validatePostalCode("3400")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Postal code must be exactly 5 digits.",
+      message: "Le code postal doit être composé de 5 chiffres exactement.",
     });
     expect(validatePostalCode("340000")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Postal code must be exactly 5 digits.",
+      message: "Le code postal doit être composé de 5 chiffres exactement.",
     });
   });
 
   it("should return error if postal code contains non-digit characters", () => {
     expect(validatePostalCode("34A00")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Postal code must be exactly 5 digits.",
+      message: "Le code postal doit être composé de 5 chiffres exactement.",
     });
   });
 
@@ -90,12 +90,12 @@ describe("validatePostalCode", () => {
     
     expect(validatePostalCode(12345)).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Postal code must be exactly 5 digits.",
+      message: "Le code postal doit être composé de 5 chiffres exactement.",
     });
 
     expect(validatePostalCode(null)).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Postal code must be exactly 5 digits.",
+      message: "Le code postal doit être composé de 5 chiffres exactement.",
     });
 
   });
@@ -113,14 +113,14 @@ describe("validateIdentity", () => {
   it("should return error if name contains digits", () => {
     expect(validateIdentity("Jean2")).toEqual({
       code: "INVALID_IDENTITY",
-      message: "Name must not contain digits or invalid characters.",
+      message: "Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes.",
     });
   });
 
   it("should return error if name contains disallowed special characters", () => {
     expect(validateIdentity("Jean@Dupont")).toEqual({
       code: "INVALID_IDENTITY",
-      message: "Name must not contain digits or invalid characters.",
+      message: "Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes.",
     });
   });
 
@@ -128,7 +128,7 @@ describe("validateIdentity", () => {
 
     expect(validateIdentity("<script>alert('xss')</script>")).toEqual({
       code: "XSS_DETECTED",
-      message: "Potential XSS content detected in name.",
+      message: "Le nom contient des caractères dangereux non autorisés.",
     });
   });
 
@@ -136,17 +136,17 @@ describe("validateIdentity", () => {
     
     expect(validateIdentity(12345)).toEqual({
       code: "INVALID_IDENTITY",
-      message: "Name must not contain digits or invalid characters.",
+      message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides.",
     });
 
     expect(validateIdentity("")).toEqual({
       code: "INVALID_IDENTITY",
-      message: "Name must not contain digits or invalid characters.",
+      message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides.",
     });
 
     expect(validateIdentity("   ")).toEqual({
       code: "INVALID_IDENTITY",
-      message: "Name must not contain digits or invalid characters.",
+      message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides.",
     
     });
 
@@ -155,12 +155,12 @@ describe("validateIdentity", () => {
   it("should handle various XSS attack vectors", () => {
     expect(validateIdentity("<img src=x onerror=alert('xss')>")).toEqual({
       code: "XSS_DETECTED",
-      message: "Potential XSS content detected in name.",
+      message: "Le nom contient des caractères dangereux non autorisés.",
     });
     
     expect(validateIdentity("<span>not allowed</span>")).toEqual({
       code: "XSS_DETECTED",
-      message: "Potential XSS content detected in name.",
+      message: "Le nom contient des caractères dangereux non autorisés.",
     });
   });
 
@@ -183,17 +183,17 @@ describe("validateEmail", () => {
 
     expect(validateEmail("invalid-email")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Email must be a valid email address.",
+      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
     });
 
     expect(validateEmail("test@")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Email must be a valid email address.",
+      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
     });
 
     expect(validateEmail("@fakedomaine.com")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Email must be a valid email address.",
+      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
     });
 
   });
@@ -201,11 +201,11 @@ describe("validateEmail", () => {
   it("should return error if email is not a string", () => {
     expect(validateEmail(12345)).toEqual({
       code: "INVALID_EMAIL",
-      message: "Email must be a valid email address.",
+      message: "L'email doit être une adresse email valide.",
     });
     expect(validateEmail(null)).toEqual({
       code: "INVALID_EMAIL",
-      message: "Email must be a valid email address.",
+      message: "L'email doit être une adresse email valide.",
     });
   });
 

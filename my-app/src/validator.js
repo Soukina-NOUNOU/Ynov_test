@@ -8,7 +8,7 @@ export function validatePostalCode(postalCode) {
     if (typeof postalCode !== "string") {
       return {
         code: "INVALID_POSTAL_CODE",
-        message: "Postal code must be exactly 5 digits.",
+        message: "Le code postal doit être composé de 5 chiffres exactement.",
       };
     }
     const regex = /^[0-9]{5}$/;
@@ -16,7 +16,7 @@ export function validatePostalCode(postalCode) {
     if (!regex.test(postalCode)) {
       return {
         code: "INVALID_POSTAL_CODE",
-        message: "Postal code must be exactly 5 digits.",
+        message: "Le code postal doit être composé de 5 chiffres exactement.",
       };
     }
     return null;
@@ -31,7 +31,7 @@ export function validateIdentity(name) {
     if (typeof name !== "string" || name.trim().length === 0) {
       return {
         code: "INVALID_IDENTITY",
-        message: "Name must not contain digits or invalid characters.",
+        message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides.",
       };
     }
 
@@ -40,7 +40,7 @@ export function validateIdentity(name) {
     if (lowerName.includes("<script") || lowerName.includes("</script>") || /<[^>]+>/.test(name)) {
         return {
             code: "XSS_DETECTED",
-            message: "Potential XSS content detected in name.",
+            message: "Le nom contient des caractères dangereux non autorisés.",
         };
     }
 
@@ -49,7 +49,7 @@ export function validateIdentity(name) {
     if (!regex.test(name)) {
       return {
         code: "INVALID_IDENTITY",
-        message: "Name must not contain digits or invalid characters.",
+        message: "Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes.",
       };
     }
 
@@ -66,7 +66,7 @@ export function validateEmail(email) {
     if (typeof email !== "string") {
       return {
         code: "INVALID_EMAIL",
-        message: "Email must be a valid email address.",
+        message: "L'email doit être une adresse email valide.",
       };
     }
 
@@ -75,7 +75,7 @@ export function validateEmail(email) {
     if (!emailRegex.test(email)) {
       return {
         code: "INVALID_EMAIL",
-        message: "Email must be a valid email address.",
+        message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
       };
     }
 
