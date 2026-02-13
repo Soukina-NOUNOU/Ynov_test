@@ -75,7 +75,7 @@ export function validateEmail(email) {
     if (!emailRegex.test(email)) {
       return {
         code: "INVALID_EMAIL",
-        message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
+        message: "Veuillez saisir une adresse email valide (test@test.com).",
       };
     }
 

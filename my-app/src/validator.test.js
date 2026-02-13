@@ -183,17 +183,17 @@ describe("validateEmail", () => {
 
     expect(validateEmail("invalid-email")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
+      message: "Veuillez saisir une adresse email valide (test@test.com).",
     });
 
     expect(validateEmail("test@")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
+      message: "Veuillez saisir une adresse email valide (test@test.com).",
     });
 
     expect(validateEmail("@fakedomaine.com")).toEqual({
       code: "INVALID_EMAIL",
-      message: "Veuillez saisir une adresse email valide (exemple@domaine.com).",
+      message: "Veuillez saisir une adresse email valide (test@test.com).",
     });
 
   });
