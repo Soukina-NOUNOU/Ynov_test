@@ -52,8 +52,6 @@ export default function RegistrationForm() {
         const cityError = validateIdentity(value);
         if (cityError) error = cityError.message;
         break;
-      default:
-        break;
     }
 
     return error;
