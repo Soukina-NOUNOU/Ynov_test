@@ -1,6 +1,21 @@
 {
     "source": {
-        "include": [ "." ],
-        "exclude": [ "node_modules/" ]
+        "include": ["src/"],
+        "includePattern": "\\.(js|jsx)$",
+        "exclude": [
+            "src/index.js",
+            "src/reportWebVitals.js", 
+            "src/setupTests.js",
+            "src/**/*.test.js"
+        ]
+    },
+    "opts": {
+        "destination": "./docs/",
+        "recurse": true
+    },
+    "plugins": ["plugins/markdown"],
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
     }
 }
