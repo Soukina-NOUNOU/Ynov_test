@@ -23,6 +23,7 @@ export default function RegistrationForm() {
   const validateField = (name, value) => {
     let error = null;
 
+    // eslint-disable-next-line default-case
     switch (name) {
       case "firstName":
       case "lastName":
