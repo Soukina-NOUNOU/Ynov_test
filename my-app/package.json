@@ -56,10 +56,6 @@
       "!src/App.js",
       "!src/pages/**",
       "!src/contexts/**"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/cypress/"
     ]
   }
 }
