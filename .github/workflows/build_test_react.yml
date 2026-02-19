@@ -43,8 +43,11 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
+          working-directory: my-app
           build: npm run build
           start: npm start
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
     
           
       - name: Upload coverage reports to codecov
