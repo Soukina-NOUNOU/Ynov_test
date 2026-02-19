@@ -50,7 +50,16 @@
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/index.js",
-      "!src/reportWebVitals.js"
+      "!src/reportWebVitals.js",
+      "!src/setupTests.js",
+      "!src/**/*.test.js",
+      "!src/App.js",
+      "!src/pages/**",
+      "!src/contexts/**"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/cypress/"
     ]
   }
 }

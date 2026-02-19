@@ -9,7 +9,9 @@ import {
   filterUsers,
   sortUsersByName,
   userExists,
-  formatUserCountText
+  formatUserCountText,
+  loadUsersFromStorage,
+  saveUsersToStorage
 } from './userUtils';
 
 describe('User Utils - Tests Unitaires (Logique Pure)', () => {
@@ -163,6 +165,58 @@ describe('User Utils - Tests Unitaires (Logique Pure)', () => {
 
     test('should return correct text for multiple users', () => {
       expect(formatUserCountText(5)).toBe('5 utilisateurs inscrits');
+    });
+  });
+
+  describe('loadUsersFromStorage', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    test('should return empty array when localStorage is empty', () => {
+      const result = loadUsersFromStorage();
+      expect(result).toEqual([]);
+    });
+
+    test('should return parsed users from localStorage', () => {
+      const mockUsers = [
+        { firstName: 'Test', lastName: 'User', email: 'test@test.com' }
+      ];
+      localStorage.setItem('users', JSON.stringify(mockUsers));
+      
+      const result = loadUsersFromStorage();
+      expect(result).toEqual(mockUsers);
+    });
+
+    test('should return empty array and log error on invalid JSON', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      localStorage.setItem('users', 'invalid-json');
+      
+      const result = loadUsersFromStorage();
+      expect(result).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Erreur lors du chargement des utilisateurs:',
+        expect.any(Error)
+      );
+      
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('saveUsersToStorage', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    test('should save users to localStorage', () => {
+      const mockUsers = [
+        { firstName: 'Test', lastName: 'User', email: 'test@test.com' }
+      ];
+      
+      saveUsersToStorage(mockUsers);
+      
+      const saved = JSON.parse(localStorage.getItem('users'));
+      expect(saved).toEqual(mockUsers);
     });
   });
 });

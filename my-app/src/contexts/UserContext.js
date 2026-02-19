@@ -16,7 +16,7 @@ export const UserProvider = ({ children }) => {
   // Load users from localStorage on initial load
   useEffect(() => {
     const savedUsers = localStorage.getItem('users');
-    if (savedUsers) {
+    if (savedUsers && savedUsers.trim()) {
       try {
         setUsers(JSON.parse(savedUsers));
       } catch (error) {
@@ -30,7 +30,11 @@ export const UserProvider = ({ children }) => {
   const addUser = (newUser) => {
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      localStorage.setItem('users', JSON.stringify(updatedUsers));
+    } catch (error) {
+      console.error('Error saving users to localStorage:', error);
+    }
   };
 
   // Function to get the number of users
