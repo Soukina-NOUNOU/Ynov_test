@@ -12,7 +12,7 @@ import {
   formatUserCountText,
   loadUsersFromStorage,
   saveUsersToStorage
-} from './userUtils';
+} from './utils/userUtils';
 
 describe('User Utils - Tests Unitaires (Logique Pure)', () => {
   const mockUsers = [
@@ -98,6 +98,33 @@ describe('User Utils - Tests Unitaires (Logique Pure)', () => {
     });
 
     test('should return empty array for no matches', () => {
+      const result = filterUsers(mockUsers, 'NonExistent');
+      expect(result).toHaveLength(0);
+    });
+
+    test('should handle users with missing properties', () => {
+      const usersWithMissingProps = [
+        { firstName: 'John' }, // missing lastName, email, city
+        { lastName: 'Smith' }, // missing firstName, email, city
+        { email: 'test@test.com' }, // missing firstName, lastName, city
+        { city: 'TestCity' } // missing firstName, lastName, email
+      ];
+      
+      const result = filterUsers(usersWithMissingProps, 'John');
+      expect(result).toHaveLength(1);
+      expect(result[0].firstName).toBe('John');
+      
+      const result2 = filterUsers(usersWithMissingProps, 'TestCity');
+      expect(result2).toHaveLength(1);
+      expect(result2[0].city).toBe('TestCity');
+    });
+
+    test('should handle whitespace-only search terms', () => {
+      const result = filterUsers(mockUsers, '   ');
+      expect(result).toEqual(mockUsers);
+    });
+
+    test('should return empty array for no matches', () => {
       const result = filterUsers(mockUsers, 'xyz');
       expect(result).toHaveLength(0);
     });
@@ -178,6 +205,28 @@ describe('User Utils - Tests Unitaires (Logique Pure)', () => {
       expect(result).toEqual([]);
     });
 
+    test('should handle users with missing email properties', () => {
+      const usersWithMissingEmails = [
+        { firstName: 'John' }, // missing email
+        { firstName: 'Jane', email: null }, // null email
+        { firstName: 'Bob', email: 'bob@test.com' }
+      ];
+      
+      const result = userExists('bob@test.com', usersWithMissingEmails);
+      expect(result).toBe(true);
+      
+      const result2 = userExists('nonexistent@test.com', usersWithMissingEmails);
+      expect(result2).toBe(false);
+    });
+
+    test('should handle null/undefined email input', () => {
+      const result = userExists(null, mockUsers);
+      expect(result).toBe(false);
+      
+      const result2 = userExists(undefined, mockUsers);
+      expect(result2).toBe(false);
+    });
+
     test('should return parsed users from localStorage', () => {
       const mockUsers = [
         { firstName: 'Test', lastName: 'User', email: 'test@test.com' }
@@ -217,6 +266,22 @@ describe('User Utils - Tests Unitaires (Logique Pure)', () => {
       
       const saved = JSON.parse(localStorage.getItem('users'));
       expect(saved).toEqual(mockUsers);
+    });
+
+    test('should handle localStorage.setItem errors gracefully', () => {
+      // Mock localStorage.setItem to throw an error
+      const originalSetItem = Storage.prototype.setItem;
+      const consoleMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+      Storage.prototype.setItem = jest.fn(() => {
+        throw new Error('LocalStorage quota exceeded');
+      });
+      
+      expect(() => saveUsersToStorage([{ firstName: 'Test', lastName: 'User' }])).not.toThrow();
+      expect(consoleMock).toHaveBeenCalledWith('Erreur lors de la sauvegarde des utilisateurs:', expect.any(Error));
+      
+      // Restore mocks
+      Storage.prototype.setItem = originalSetItem;
+      consoleMock.mockRestore();
     });
   });
 });
