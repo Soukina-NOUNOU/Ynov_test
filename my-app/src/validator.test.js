@@ -110,6 +110,17 @@ describe("validateIdentity", () => {
     expect(validateIdentity("Éloïse")).toBeNull();
   });
 
+  it("should return error if name is too short", () => {
+    expect(validateIdentity("A")).toEqual({
+      code: "INVALID_LENGTH",
+      message: "Le prénom doit contenir au moins 2 caractères",
+    });
+    expect(validateIdentity("")).toEqual({
+      code: "INVALID_IDENTITY",
+      message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides.",
+    });
+  });
+
   it("should return error if name contains digits", () => {
     expect(validateIdentity("Jean2")).toEqual({
       code: "INVALID_IDENTITY",

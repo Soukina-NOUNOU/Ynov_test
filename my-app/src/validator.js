@@ -35,6 +35,14 @@ export function validateIdentity(name) {
       };
     }
 
+    // Check minimum length (2 characters)
+    if (name.trim().length < 2) {
+      return {
+        code: "INVALID_LENGTH",
+        message: "Le prénom doit contenir au moins 2 caractères",
+      };
+    }
+
     // Simple XSS detection: check for common XSS attack vectors
     const lowerName = name.toLowerCase();
     if (lowerName.includes("<script") || lowerName.includes("</script>") || /<[^>]+>/.test(name)) {

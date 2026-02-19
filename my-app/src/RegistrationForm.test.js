@@ -1,6 +1,6 @@
 
 
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RegistrationForm from "./RegistrationForm";
 
@@ -55,7 +55,9 @@ describe("RegistrationForm / complete integration", () => {
     const toaster = screen.getByText("Utilisateur enregistré avec succès !");
     expect(toaster).toBeInTheDocument();
 
-    jest.advanceTimersByTime(3000);
+    act(() => {
+      jest.advanceTimersByTime(3000);
+    });
 
     await waitFor(() => {
       expect(toaster).not.toBeInTheDocument();
@@ -231,8 +233,9 @@ describe("RegistrationForm / complete integration", () => {
       screen.getByText("Utilisateur enregistré avec succès !")
     ).toBeInTheDocument();
 
-    const saved = JSON.parse(localStorage.getItem("user"));
-    expect(saved.firstName).toBe("Jone");
+    const saved = JSON.parse(localStorage.getItem("users"));
+    expect(saved).toHaveLength(1);
+    expect(saved[0].firstName).toBe("Jone");
 
     expect(screen.getByLabelText("Prénom").value).toBe("");
   });

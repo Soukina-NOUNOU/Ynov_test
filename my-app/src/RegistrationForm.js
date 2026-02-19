@@ -7,7 +7,7 @@ import {
 import calculateAge from "./module";
 import "./RegistrationForm.css";
 
-export default function RegistrationForm() {
+export default function RegistrationForm({ onRegistrationSuccess }) {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -163,15 +163,18 @@ export default function RegistrationForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Retrieve the list of existing users or create an empty array
-    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Add the new user to the users array
+    // Create user object
     const newUser = { ...form };
-    existingUsers.push(newUser);
     
-    // Save the updated array
-    localStorage.setItem('users', JSON.stringify(existingUsers));
+    // If a callback function is provided, use it
+    if (onRegistrationSuccess) {
+      onRegistrationSuccess(newUser);
+    } else {
+      // Fallback: save directly to localStorage (for compatibility)
+      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      existingUsers.push(newUser);
+      localStorage.setItem('users', JSON.stringify(existingUsers));
+    }
 
     // Display toaster
     setShowToaster(true);
