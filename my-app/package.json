@@ -14,6 +14,8 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
+    "@types/node": "^25.3.0",
+    "cypress": "^15.10.0",
     "jsdoc": "^4.0.5",
     "typescript": "4.9.5"
   },
@@ -22,7 +24,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
-    "jsdoc": "jsdoc -c jsdoc.config.json -r -d ./docs"
+    "jsdoc": "jsdoc -c jsdoc.config.json -r -d ./docs",
+    "cypress": "cypress open"
   },
   "eslintConfig": {
     "extends": [

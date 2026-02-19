@@ -39,6 +39,13 @@ jobs:
         run: |
           echo " Application will be deployed to: ${{ env.GITHUB_PAGES_URL }}"
           echo " Documentation will be available at: ${{ env.GITHUB_PAGES_URL }}/docs/"
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build
+          start: npm start
+    
           
       - name: Upload coverage reports to codecov
         uses: codecov/codecov-action@v3
