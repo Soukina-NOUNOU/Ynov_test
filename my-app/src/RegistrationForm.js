@@ -163,8 +163,15 @@ export default function RegistrationForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Save and display success message
-    localStorage.setItem("user", JSON.stringify(form));
+    // Retrieve the list of existing users or create an empty array
+    const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    // Add the new user to the users array
+    const newUser = { ...form };
+    existingUsers.push(newUser);
+    
+    // Save the updated array
+    localStorage.setItem('users', JSON.stringify(existingUsers));
 
     // Display toaster
     setShowToaster(true);
