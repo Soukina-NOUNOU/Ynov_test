@@ -48,6 +48,12 @@ jobs:
         with:
           directory: ./my-app/coverage
         
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build --prefix my-app
+          start: npm start --prefix my-app
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v3
