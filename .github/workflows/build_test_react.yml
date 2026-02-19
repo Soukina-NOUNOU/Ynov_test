@@ -48,12 +48,23 @@ jobs:
         with:
           directory: ./my-app/coverage
         
-      - name: Run Cypress tests
+      - name: Run Cypress tests (headless)
         uses: cypress-io/github-action@v6
         with:
           build: npm run build
           start: npm start
           working-directory: my-app
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          spec: cypress/e2e/**/*.cy.js
+
+      - name: Upload Cypress test results
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: my-app/cypress/screenshots
 
       - name: Setup Pages
         id: pages
