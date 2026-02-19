@@ -51,8 +51,9 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          build: npm run build --prefix my-app
-          start: npm start --prefix my-app
+          build: npm run build
+          start: npm start
+          working-directory: my-app
 
       - name: Setup Pages
         id: pages
