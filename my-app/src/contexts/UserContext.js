@@ -19,13 +19,7 @@ export const UserProvider = ({ children }) => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-        // Safety check: ensure response and response.data exist
-        if (response && response.data && Array.isArray(response.data)) {
-          setUsers(response.data);
-        } else {
-          console.warn('Invalid response format from API, using empty array');
-          setUsers([]);
-        }
+        setUsers(response.data);
       } catch (error) {
         console.error('Error loading users from API:', error);
         setUsers([]);
@@ -39,14 +33,9 @@ export const UserProvider = ({ children }) => {
   const addUser = async (newUser) => {
     try {
       const response = await axios.post('https://jsonplaceholder.typicode.com/users', newUser);
-      // Safety check: ensure response and response.data exist
-      if (response && response.data) {
-        const updatedUsers = [...users, response.data];
-        setUsers(updatedUsers);
-        return { success: true, data: response.data };
-      } else {
-        throw new Error('Invalid response format from API');
-      }
+      const updatedUsers = [...users, response.data];
+      setUsers(updatedUsers);
+      return { success: true, data: response.data };
     } catch (error) {
       console.error('Error saving user to API:', error);
       
