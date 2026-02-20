@@ -58,7 +58,7 @@ jobs:
           build: npm run build
           start: npm start
           working-directory: my-app
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:3000/Ynov_test'
           wait-on-timeout: 120
           browser: chrome
           spec: cypress/e2e/**/*.cy.js

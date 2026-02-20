@@ -73,7 +73,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       });
 
       // 4. Redirection or Navigation to Home
-      cy.url().should('equal', Cypress.config().baseUrl + '/', { timeout: 4000 });
+      cy.url().should('match', new RegExp('^' + Cypress.config().baseUrl + '/?$'), { timeout: 4000 });
 
       // 5. Verify "1 user registered" AND the presence of the new user in the list
       cy.contains('1 utilisateur inscrit').should('be.visible');
@@ -156,7 +156,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
 
       // 5. Return to Home
       cy.contains('Retour à l\'accueil').click();
-      cy.url().should('equal', Cypress.config().baseUrl + '/');
+      cy.url().should('match', new RegExp('^' + Cypress.config().baseUrl + '/?$'));
 
       // 6. Verify "Still 1 registered user" and the unchanged list
       cy.contains('1 utilisateur inscrit').should('be.visible');
