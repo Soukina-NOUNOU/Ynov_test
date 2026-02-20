@@ -8,7 +8,7 @@ import "./App.css";
 function App() {
   return (
     <UserProvider>
-      <Router>
+      <Router basename="/Ynov_test">
         <div className="App">
           <Routes>
             <Route path="/" element={<HomePage />} />
