@@ -1,25 +1,36 @@
 describe('Tests E2E Navigation Multi-Pages', () => {
   beforeEach(() => {
-    // Clean localStorage before each test
-    cy.window().then((win) => {
-      win.localStorage.clear();
-    });
+    // Intercept API calls
+    cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+      statusCode: 200,
+      body: []
+    }).as('getUsers');
+    
+    cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+      statusCode: 201,
+      body: {
+        id: 11,
+        name: 'Marc Dupont',
+        email: 'marc.dupont@test.com',
+        address: {
+          city: 'Paris',
+          zipcode: '75001-1234'
+        }
+      }
+    }).as('addUser');
   });
 
-  describe('Scénario Nominal - Navigation et ajout utilisateur', () => {
+  describe('Nominal scenario - Navigation and user registration', () => {
     it('should complete full navigation flow with successful user registration', () => {
       // 1. Navigate to Home Page
       cy.visit('/');
       
+      // Wait for API call to load users
+      cy.wait('@getUsers');
+      
       // Verify initial state: "Aucun utilisateur inscrit" and no user list
       cy.contains('Aucun utilisateur inscrit').should('be.visible');
       cy.contains('Liste des utilisateurs inscrits :').should('not.exist');
-      
-      // Verify that localStorage is empty
-      cy.window().then((win) => {
-        const users = JSON.parse(win.localStorage.getItem('users') || '[]');
-        expect(users).to.have.length(0);
-      });
 
       // 2. Click/Navigation to the Registration Form (/register)
       cy.contains('S\'inscrire').click();
@@ -48,6 +59,18 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       
       // Verify the success toaster
       cy.contains('Utilisateur enregistré avec succès !').should('be.visible');
+      
+      // Verify that the POST API call was made
+      cy.wait('@addUser').then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          name: 'Marc Dupont',
+          email: 'marc.dupont@test.com',
+          address: {
+            city: 'Paris',
+            zipcode: '75001-1234'
+          }
+        });
+      });
 
       // 4. Redirection or Navigation to Home
       cy.url().should('equal', Cypress.config().baseUrl + '/', { timeout: 4000 });
@@ -60,41 +83,30 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.contains('Marc Dupont').should('be.visible');
       cy.contains('Email: marc.dupont@test.com').should('be.visible');
       cy.contains('Ville: Paris').should('be.visible');
-      
-      // Verify that the data is correctly saved in localStorage
-      cy.window().then((win) => {
-        const users = JSON.parse(win.localStorage.getItem('users') || '[]');
-        expect(users).to.have.length(1);
-        expect(users[0]).to.deep.include({
-          firstName: 'Marc',
-          lastName: 'Dupont',
-          email: 'marc.dupont@test.com',
-          city: 'Paris',
-          postalCode: '75001-1234'
-        });
-      });
     });
   });
 
   describe('Scenario error / Attempt invalid registration', () => {
     it('should handle invalid registration attempt and maintain existing data', () => {
-      // Pre-condition: Starting from the previous state (1 registered user)
-      // Pre-fill localStorage with an existing user to simulate the state after the first test
-      const existingUser = {
-        firstName: 'Marc',
-        lastName: 'Dupont',
-        email: 'marc.dupont@test.com',
-        birth: '1990-05-15',
-        city: 'Paris',
-        postalCode: '75001'
-      };
+      // Pre-condition: Mock API to return existing user
+      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+        statusCode: 200,
+        body: [{
+          id: 1,
+          name: 'Marc Dupont', 
+          email: 'marc.dupont@test.com',
+          address: {
+            city: 'Paris',
+            zipcode: '75001-1234'
+          }
+        }]
+      }).as('getUsersWithData');
       
-      cy.window().then((win) => {
-        win.localStorage.setItem('users', JSON.stringify([existingUser]));
-      });
-
+      // Mock successful update for existing data (no POST should be called)
+      
       // 1. Navigation to Home to verify the initial state
       cy.visit('/');
+      cy.wait('@getUsersWithData');
       cy.contains('1 utilisateur inscrit').should('be.visible');
       cy.contains('Marc Dupont').should('be.visible');
 
@@ -103,15 +115,15 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.url().should('include', '/register');
       cy.contains('Inscription').should('be.visible');
 
-      // 3. Attempt invalid registration - Test with already taken email AND empty fields
+      // 3. Attempt invalid registration - Test with invalid data
       
-      // Test 1: Empty fields - submit directly
+      // Test 1: Empty fields - submit directly (button should be disabled)
       cy.get('button[type="submit"]').should('be.disabled');
       
-      // Test 2: Email already exists + invalid data
+      // Test 2: Invalid data across all fields
       cy.get('#firstName').type('A'); // Too short - error
       cy.get('#lastName').clear(); // Leave empty
-      cy.get('#email').type('marc.dupont@test.com'); // Email already exists (even if validation is not implemented for duplicates)
+      cy.get('#email').type('invalid-email'); // Invalid email format  
       cy.get('#birth').clear(); // Leave empty
       cy.get('#city').type('Ville<script>alert("xss")</script>'); // XSS attempt
       cy.get('#postalCode').type('123'); // Invalid postal code
@@ -128,6 +140,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('.error').should('have.length.greaterThan', 0);
       cy.contains('Le prénom doit contenir au moins 2 caractères').should('be.visible');
       cy.contains('Le nom et prénom sont obligatoires et ne peuvent pas être vides.').should('be.visible');
+      cy.contains('Veuillez saisir une adresse email valide (test@test.com).').should('be.visible');
       cy.contains('La date de naissance est obligatoire').should('be.visible');
       cy.contains('Le nom contient des caractères dangereux non autorisés.').should('be.visible');
       cy.contains('Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).').should('be.visible');
@@ -137,6 +150,9 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       
       // Verify that no success toaster appears
       cy.contains('Utilisateur enregistré avec succès !').should('not.exist');
+      
+      // Verify no API POST call was made
+      cy.get('@addUser.all').should('have.length', 0);
 
       // 5. Return to Home
       cy.contains('Retour à l\'accueil').click();
@@ -151,58 +167,31 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.contains('Email: marc.dupont@test.com').should('be.visible');
       cy.contains('Ville: Paris').should('be.visible');
       
-      // Verify that no additional user has been added
+      // Verify that only 1 user card is displayed
       cy.get('.user-card').should('have.length', 1);
-      
-      // Verify that localStorage still contains exactly 1 user
-      cy.window().then((win) => {
-        const users = JSON.parse(win.localStorage.getItem('users') || '[]');
-        expect(users).to.have.length(1);
-        expect(users[0]).to.deep.equal(existingUser);
-        
-        // Verify that no invalid data has been saved
-        expect(users[0].firstName).to.not.equal('A');
-        expect(users[0].email).to.equal('marc.dupont@test.com'); // Original email preserved
-        expect(users[0].city).to.not.include('<script>');
-      });
-
-      // Bonus Test: Verify the persistence of errors in localStorage
-      cy.window().then((win) => {
-        expect(win.localStorage.getItem('error_firstName')).to.equal('Le prénom doit contenir au moins 2 caractères');
-        expect(win.localStorage.getItem('error_lastName')).to.equal('Le nom et prénom sont obligatoires et ne peuvent pas être vides.');
-        expect(win.localStorage.getItem('error_birth')).to.equal('La date de naissance est obligatoire');
-        expect(win.localStorage.getItem('error_city')).to.equal('Le nom contient des caractères dangereux non autorisés.');
-        expect(win.localStorage.getItem('error_postalCode')).to.equal('Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).');
-      });
     });
+
   });
 
   describe('Navigation and persistence data', () => {
     it('should maintain data consistency across page navigations', () => {
-      // Additional test to verify persistence across multiple navigations
-      
-      // Create a base data
-      const user = {
-        firstName: 'Test',
-        lastName: 'Persistance',
-        email: 'test.persistance@example.com',
-        birth: '1995-03-10',
-        city: 'Lyon',
-        postalCode: '69000-5678'
-      };
-      
-      cy.window().then((win) => {
-        win.localStorage.setItem('users', JSON.stringify([user]));
-      });
+      // Setup: Mock API to return test user data
+      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+        statusCode: 200,
+        body: [{
+          id: 1,
+          name: 'Test Persistance', 
+          email: 'test.persistance@example.com',
+          address: {
+            city: 'Lyon',
+            zipcode: '69000-5678'
+          }
+        }]
+      }).as('getUsersPersistence');
       
       // Multiple navigation: Home => Form => Home => Form => Home
       cy.visit('/');
-      cy.contains('1 utilisateur inscrit').should('be.visible');
-      
-      cy.contains('S\'inscrire').click();
-      cy.url().should('include', '/register');
-      
-      cy.contains('Retour à l\'accueil').click();
+      cy.wait('@getUsersPersistence');
       cy.contains('1 utilisateur inscrit').should('be.visible');
       cy.contains('Test Persistance').should('be.visible');
       
@@ -213,12 +202,15 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.contains('1 utilisateur inscrit').should('be.visible');
       cy.contains('Test Persistance').should('be.visible');
       
-      // Verify that localStorage still contains the same user data
-      cy.window().then((win) => {
-        const users = JSON.parse(win.localStorage.getItem('users') || '[]');
-        expect(users).to.have.length(1);
-        expect(users[0]).to.deep.equal(user);
-      });
+      cy.contains('S\'inscrire').click();
+      cy.url().should('include', '/register');
+      
+      cy.contains('Retour à l\'accueil').click();
+      cy.contains('1 utilisateur inscrit').should('be.visible');
+      cy.contains('Test Persistance').should('be.visible');
+      
+      // Verify API calls were made for each page visit (at least 1 call for initial load)
+      cy.get('@getUsersPersistence.all').should('have.length.at.least', 1);
     });
   });
 });

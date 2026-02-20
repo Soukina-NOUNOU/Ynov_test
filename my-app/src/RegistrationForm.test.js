@@ -1,12 +1,14 @@
-
-
 import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RegistrationForm from "./RegistrationForm";
 
+// Mock axios
+jest.mock('axios');
+
 describe("RegistrationForm / complete integration", () => {
   beforeEach(() => {
     localStorage.clear();
+    jest.clearAllMocks();
   });
 
   const fillValidForm = async () => {
@@ -222,8 +224,10 @@ describe("RegistrationForm / complete integration", () => {
     expect(button).not.toBeDisabled();
   });
 
-  test("Should submit valid form, display toaster, save to localStorage and reset", async () => {
-    render(<RegistrationForm />);
+  test("Should submit valid form, display toaster, and call API through callback", async () => {
+    const mockCallback = jest.fn();
+    
+    render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
 
     await fillValidForm();
 
@@ -233,9 +237,19 @@ describe("RegistrationForm / complete integration", () => {
       screen.getByText("Utilisateur enregistré avec succès !")
     ).toBeInTheDocument();
 
-    const saved = JSON.parse(localStorage.getItem("users"));
-    expect(saved).toHaveLength(1);
-    expect(saved[0].firstName).toBe("Jone");
+    expect(mockCallback).toHaveBeenCalledWith({
+      name: "Jone Doe",
+      email: "jone@test.com",
+      address: {
+        city: "Nîmes",
+        zipcode: "30000-1234"
+      },
+      firstName: "Jone",
+      lastName: "Doe",
+      birth: "1990-08-19",
+      city: "Nîmes",
+      postalCode: "30000-1234"
+    });
 
     expect(screen.getByLabelText("Prénom").value).toBe("");
   });

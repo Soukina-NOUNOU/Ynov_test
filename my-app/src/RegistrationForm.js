@@ -178,14 +178,9 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
       postalCode: form.postalCode
     };
     
-    // If a callback function is provided, use it
+    // Use callback function to send user to API
     if (onRegistrationSuccess) {
       onRegistrationSuccess(newUser);
-    } else {
-      // Fallback: save directly to localStorage (for compatibility)
-      const existingUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      existingUsers.push(newUser);
-      localStorage.setItem('users', JSON.stringify(existingUsers));
     }
 
     // Display toaster
