@@ -57,6 +57,8 @@
       "!src/App.js",
       "!src/pages/**",
       "!src/contexts/**"
-    ]
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.js"],
+    "testEnvironment": "jsdom"
   }
 }
