@@ -49,13 +49,21 @@ describe("RegistrationForm / complete integration", () => {
 
   test("Should the toaster disappears after 3 seconds", async () => {
     jest.useFakeTimers();
-    render(<RegistrationForm />);
+    
+    // Mock successful callback
+    const mockCallback = jest.fn().mockResolvedValue({ success: true });
+    
+    render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
 
     await fillValidForm();
     await userEvent.click(screen.getByRole("button", { name: "S'enregistrer" }));
 
+    // Wait for the toaster to appear
+    await waitFor(() => {
+      expect(screen.getByText("Utilisateur enregistré avec succès !")).toBeInTheDocument();
+    });
+    
     const toaster = screen.getByText("Utilisateur enregistré avec succès !");
-    expect(toaster).toBeInTheDocument();
 
     act(() => {
       jest.advanceTimersByTime(3000);
@@ -251,7 +259,7 @@ describe("RegistrationForm / complete integration", () => {
   });
 
   test("Should submit valid form, display toaster, and call API through callback", async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = jest.fn().mockResolvedValue({ success: true });
     
     render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
 
@@ -259,9 +267,12 @@ describe("RegistrationForm / complete integration", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "S'enregistrer" }));
 
-    expect(
-      screen.getByText("Utilisateur enregistré avec succès !")
-    ).toBeInTheDocument();
+    // Wait for the toaster to appear
+    await waitFor(() => {
+      expect(
+        screen.getByText("Utilisateur enregistré avec succès !")
+      ).toBeInTheDocument();
+    });
 
     expect(mockCallback).toHaveBeenCalledWith({
       name: "Jone Doe",
@@ -292,6 +303,128 @@ describe("RegistrationForm / complete integration", () => {
     await userEvent.click(screen.getByRole("button", { name: "S'enregistrer" }));
 
     expect(localStorage.getItem("error_email")).toBeNull();
+  });
+
+  // New tests for HTTP status codes
+  describe('HTTP Error Handling', () => {
+    beforeEach(() => {
+      // Mock window.alert to avoid issues in tests
+      window.alert = jest.fn();
+    });
+
+    test('Should handle 400 error (Email already exists)', async () => {
+      const axios = require('axios');
+      const mockCallback = jest.fn();
+      
+      // Mock axios POST to return 400 error
+      const error400 = new Error('Bad Request');
+      error400.response = {
+        status: 400,
+        data: { message: 'Email already exists' }
+      };
+      
+      // Mock the callback to simulate HTTP 400 error
+      mockCallback.mockResolvedValue({
+        success: false,
+        error: 'Cette adresse email est déjà utilisée, veuillez en choisir une autre.',
+        status: 400
+      });
+      
+      render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
+      
+      await fillValidForm();
+      await userEvent.click(screen.getByRole('button', { name: "S'enregistrer" }));
+      
+      // Verify that callback was called
+      expect(mockCallback).toHaveBeenCalled();
+      
+      // Verify that no success toaster appears
+      expect(screen.queryByText('Utilisateur enregistré avec succès !')).not.toBeInTheDocument();
+      
+      // Verify that form is NOT cleared (user can correct the email)
+      expect(screen.getByLabelText('Prénom').value).toBe('Jone');
+      expect(screen.getByLabelText('Email').value).toBe('jone@test.com');
+    });
+
+    test('Should handle 500 error (Server down)', async () => {
+      const mockCallback = jest.fn();
+      
+      // Mock the callback to simulate HTTP 500 error
+      mockCallback.mockResolvedValue({
+        success: false,
+        error: 'Le serveur rencontre actuellement des difficultés. Veuillez réessayer plus tard.',
+        status: 500
+      });
+      
+      render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
+      
+      await fillValidForm();
+      await userEvent.click(screen.getByRole('button', { name: "S'enregistrer" }));
+      
+      // Verify that callback was called
+      expect(mockCallback).toHaveBeenCalled();
+      
+      // Verify that no success toaster appears
+      expect(screen.queryByText('Utilisateur enregistré avec succès !')).not.toBeInTheDocument();
+      
+      // Verify that form is NOT cleared (user can retry later)
+      expect(screen.getByLabelText('Prénom').value).toBe('Jone');
+      expect(screen.getByLabelText('Email').value).toBe('jone@test.com');
+    });
+
+    test('Should handle successful registration (200/201)', async () => {
+      const mockCallback = jest.fn();
+      
+      // Mock the callback to simulate successful registration
+      mockCallback.mockResolvedValue({
+        success: true,
+        data: { id: 11, name: 'Jone Doe' }
+      });
+      
+      render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
+      
+      await fillValidForm();
+      await userEvent.click(screen.getByRole('button', { name: "S'enregistrer" }));
+      
+      // Verify that callback was called
+      expect(mockCallback).toHaveBeenCalled();
+      
+      // Verify that success toaster appears
+      await waitFor(() => {
+        expect(screen.getByText('Utilisateur enregistré avec succès !')).toBeInTheDocument();
+      });
+      
+      // Verify that form is cleared on success
+      await waitFor(() => {
+        expect(screen.getByLabelText('Prénom').value).toBe('');
+        expect(screen.getByLabelText('Email').value).toBe('');
+      });
+    });
+
+    test('Should handle network error (no response)', async () => {
+      const mockCallback = jest.fn();
+      
+      // Mock the callback to simulate network error
+      mockCallback.mockResolvedValue({
+        success: false,
+        error: 'Impossible de joindre le serveur. Vérifiez votre connexion internet.',
+        status: 0
+      });
+      
+      render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
+      
+      await fillValidForm();
+      await userEvent.click(screen.getByRole('button', { name: "S'enregistrer" }));
+      
+      // Verify that callback was called
+      expect(mockCallback).toHaveBeenCalled();
+      
+      // Verify that no success toaster appears
+      expect(screen.queryByText('Utilisateur enregistré avec succès !')).not.toBeInTheDocument();
+      
+      // Verify that form is NOT cleared (user can retry)
+      expect(screen.getByLabelText('Prénom').value).toBe('Jone');
+    });
   });
 
   

@@ -1,4 +1,4 @@
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, renderHook } from '@testing-library/react';
 import { UserProvider, useUsers } from './UserContext';
 import axios from 'axios';
 
@@ -134,5 +134,129 @@ describe('UserContext Integration Tests', () => {
     });
 
     consoleErrorSpy.mockRestore();
+  });
+
+  // Tests for HTTP error handling
+  describe('HTTP Error Handling in addUser', () => {
+    const wrapper = ({ children }) => <UserProvider>{children}</UserProvider>;
+    
+    beforeEach(() => {
+      // Mock window.alert to avoid issues in tests
+      window.alert = jest.fn();
+    });
+
+    test('should handle 400 error (email already exists)', async () => {
+      const error400 = new Error('Bad Request');
+      error400.response = {
+        status: 400,
+        data: { message: 'Email already exists' }
+      };
+      axios.post.mockRejectedValue(error400);
+
+      const { result } = renderHook(() => useUsers(), { wrapper });
+
+      const newUser = {
+        name: 'Test User',
+        email: 'existing@test.com',
+        address: { city: 'Paris', zipcode: '75001-1234' }
+      };
+
+      const response = await act(async () => {
+        return await result.current.addUser(newUser);
+      });
+
+      expect(response.success).toBe(false);
+      expect(response.status).toBe(400);
+      expect(response.error).toBe('Cette adresse email est déjà utilisée, veuillez en choisir une autre.');
+      expect(window.alert).toHaveBeenCalledWith('Cette adresse email est déjà utilisée, veuillez en choisir une autre.');
+      
+      // Verify users list wasn't updated
+      expect(result.current.users).toEqual([]);
+    });
+
+    test('should handle 500 error (server down)', async () => {
+      const error500 = new Error('Internal Server Error');
+      error500.response = {
+        status: 500,
+        data: { message: 'Internal Server Error' }
+      };
+      axios.post.mockRejectedValue(error500);
+
+      const { result } = renderHook(() => useUsers(), { wrapper });
+
+      const newUser = {
+        name: 'Test User',
+        email: 'test@test.com',
+        address: { city: 'Lyon', zipcode: '69001-5678' }
+      };
+
+      const response = await act(async () => {
+        return await result.current.addUser(newUser);
+      });
+
+      expect(response.success).toBe(false);
+      expect(response.status).toBe(500);
+      expect(response.error).toBe('Le serveur rencontre actuellement des difficultés. Veuillez réessayer plus tard.');
+      expect(window.alert).toHaveBeenCalledWith('Le serveur rencontre actuellement des difficultés. Veuillez réessayer plus tard.');
+      
+      // Verify users list wasn't updated
+      expect(result.current.users).toEqual([]);
+    });
+
+    test('should handle network error (no response)', async () => {
+      const networkError = new Error('Network Error');
+      // No response property = network error
+      axios.post.mockRejectedValue(networkError);
+
+      const { result } = renderHook(() => useUsers(), { wrapper });
+
+      const newUser = {
+        name: 'Test User',
+        email: 'test@test.com',
+        address: { city: 'Marseille', zipcode: '13001-9876' }
+      };
+
+      const response = await act(async () => {
+        return await result.current.addUser(newUser);
+      });
+
+      expect(response.success).toBe(false);
+      expect(response.status).toBe(0);
+      expect(response.error).toBe('Impossible de joindre le serveur. Vérifiez votre connexion internet.');
+      expect(window.alert).toHaveBeenCalledWith('Impossible de joindre le serveur. Vérifiez votre connexion internet.');
+      
+      // Verify users list wasn't updated
+      expect(result.current.users).toEqual([]);
+    });
+
+    test('should handle successful user creation (200/201)', async () => {
+      const mockUser = {
+        id: 11,
+        name: 'Test User',
+        email: 'test@test.com',
+        address: { city: 'Nice', zipcode: '06000-1111' }
+      };
+      
+      axios.post.mockResolvedValue({ data: mockUser });
+
+      const { result } = renderHook(() => useUsers(), { wrapper });
+
+      const newUser = {
+        name: 'Test User',
+        email: 'test@test.com',
+        address: { city: 'Nice', zipcode: '06000-1111' }
+      };
+
+      const response = await act(async () => {
+        return await result.current.addUser(newUser);
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.data).toEqual(mockUser);
+      expect(window.alert).not.toHaveBeenCalled();
+      
+      // Verify user was added to the list
+      expect(result.current.users).toEqual([mockUser]);
+    });
   });
 });

@@ -35,8 +35,41 @@ export const UserProvider = ({ children }) => {
       const response = await axios.post('https://jsonplaceholder.typicode.com/users', newUser);
       const updatedUsers = [...users, response.data];
       setUsers(updatedUsers);
+      return { success: true, data: response.data };
     } catch (error) {
       console.error('Error saving user to API:', error);
+      
+      // Handle error
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || error.message;
+        
+        if (status === 400) {
+          //Email already exists or other validation error
+          const errorMsg = message.includes('email') || message.includes('Email') 
+            ? 'Cette adresse email est déjà utilisée, veuillez en choisir une autre.'
+            : 'Données invalides. Veuillez vérifier vos informations.';
+          alert(errorMsg);
+          return { success: false, error: errorMsg, status: 400 };
+        } 
+        
+        if (status === 500) {
+          // Server error
+          const errorMsg = 'Le serveur rencontre actuellement des difficultés. Veuillez réessayer plus tard.';
+          alert(errorMsg);
+          return { success: false, error: errorMsg, status: 500 };
+        }
+        
+        // Other HTTP errors
+        const genericError = `Erreur du serveur (${status}). Veuillez réessayer.`;
+        alert(genericError);
+        return { success: false, error: genericError, status };
+      }
+      
+      // Network or other errors
+      const networkError = 'Impossible de joindre le serveur. Vérifiez votre connexion internet.';
+      alert(networkError);
+      return { success: false, error: networkError, status: 0 };
     }
   };
 

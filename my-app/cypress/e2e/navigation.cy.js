@@ -213,4 +213,137 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('@getUsersPersistence.all').should('have.length.at.least', 1);
     });
   });
+
+  describe('HTTP Error Scenarios', () => {
+    beforeEach(() => {
+      // Mock successful GET for initial load
+      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+        statusCode: 200,
+        body: []
+      }).as('getUsers');
+    });
+
+    it('should handle 400 error - Email already exists', () => {
+      // Mock POST to return 400 error
+      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+        statusCode: 400,
+        body: {
+          message: 'Email already exists'
+        }
+      }).as('addUserError400');
+
+      cy.visit('/');
+      cy.wait('@getUsers');
+      
+      // Navigate to registration
+      cy.contains('S\'inscrire').click();
+      
+      // Fill form with valid data
+      cy.get('#firstName').type('Test');
+      cy.get('#lastName').type('User');
+      cy.get('#email').type('existing@test.com'); // Email that "already exists"
+      cy.get('#birth').type('1990-01-01');
+      cy.get('#city').type('Paris');
+      cy.get('#postalCode').type('75001-1234');
+      
+      // Submit form
+      cy.get('button[type="submit"]').click();
+      
+      // Verify API call was made
+      cy.wait('@addUserError400');
+      
+      // Verify error alert was shown (we can't assert on alert directly, but we can verify the request)
+      cy.get('@addUserError400.all').should('have.length', 1);
+      
+      // Verify we stay on the registration page (no redirect)
+      cy.url().should('include', '/register');
+      
+      // Verify no success toaster appears
+      cy.contains('Utilisateur enregistré avec succès !').should('not.exist');
+      
+      // Verify form data is preserved (user can correct the email)
+      cy.get('#firstName').should('have.value', 'Test');
+      cy.get('#email').should('have.value', 'existing@test.com');
+    });
+
+    it('should handle 500 error - Server down', () => {
+      // Mock POST to return 500 error
+      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+        statusCode: 500,
+        body: {
+          message: 'Internal Server Error'
+        }
+      }).as('addUserError500');
+
+      cy.visit('/');
+      cy.wait('@getUsers');
+      
+      // Navigate to registration
+      cy.contains('S\'inscrire').click();
+      
+      // Fill form with valid data
+      cy.get('#firstName').type('Server');
+      cy.get('#lastName').type('Error');
+      cy.get('#email').type('server.error@test.com');
+      cy.get('#birth').type('1985-05-15');
+      cy.get('#city').type('Lyon');
+      cy.get('#postalCode').type('69001-5678');
+      
+      // Submit form
+      cy.get('button[type="submit"]').click();
+      
+      // Verify API call was made
+      cy.wait('@addUserError500');
+      
+      // Verify error was handled
+      cy.get('@addUserError500.all').should('have.length', 1);
+      
+      // Verify we stay on the registration page (no redirect)
+      cy.url().should('include', '/register');
+      
+      // Verify no success toaster appears
+      cy.contains('Utilisateur enregistré avec succès !').should('not.exist');
+      
+      // Verify form data is preserved (user can retry later)
+      cy.get('#firstName').should('have.value', 'Server');
+      cy.get('#city').should('have.value', 'Lyon');
+    });
+
+    it('should handle network error', () => {
+      // Mock POST to simulate network error (no response)
+      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+        forceNetworkError: true
+      }).as('addUserNetworkError');
+
+      cy.visit('/');
+      cy.wait('@getUsers');
+      
+      // Navigate to registration
+      cy.contains('S\'inscrire').click();
+      
+      // Fill form with valid data
+      cy.get('#firstName').type('Network');
+      cy.get('#lastName').type('Test');
+      cy.get('#email').type('network@test.com');
+      cy.get('#birth').type('1992-03-10');
+      cy.get('#city').type('Marseille');
+      cy.get('#postalCode').type('13001-9876');
+      
+      // Submit form
+      cy.get('button[type="submit"]').click();
+      
+      // Verify network error was triggered
+      cy.wait('@addUserNetworkError');
+      
+      // Verify we stay on the registration page
+      cy.url().should('include', '/register');
+      
+      // Verify no success toaster appears
+      cy.contains('Utilisateur enregistré avec succès !').should('not.exist');
+      
+      // Verify form data is preserved
+      cy.get('#firstName').should('have.value', 'Network');
+      cy.get('#email').should('have.value', 'network@test.com');
+    });
+  });
 });

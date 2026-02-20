@@ -159,7 +159,7 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -180,32 +180,60 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     
     // Use callback function to send user to API
     if (onRegistrationSuccess) {
-      onRegistrationSuccess(newUser);
+      try {
+        const result = await onRegistrationSuccess(newUser);
+        
+        // Only show success toaster if operation was successful
+        if (result && result.success !== false) {
+          setShowToaster(true);
+          
+          // Hide the toaster after 3 seconds
+          setTimeout(() => {
+            setShowToaster(false);
+          }, 3000);
+          
+          // Clear the form only on success
+          setForm({
+            firstName: "",
+            lastName: "",
+            email: "",
+            birth: "",
+            city: "",
+            postalCode: "",
+          });
+          setErrors({});
+          
+          // Clear localStorage errors
+          ['error_firstName', 'error_lastName', 'error_email', 'error_birth', 'error_city', 'error_postalCode']
+            .forEach(key => localStorage.removeItem(key));
+        }
+        // If result.success === false, error was already shown by UserContext alert
+      } catch (error) {
+        console.error('Unexpected error during registration:', error);
+      }
+    } else {
+      // Fallback behavior if no callback provided
+      setShowToaster(true);
+      
+      // Hide the toaster after 3 seconds
+      setTimeout(() => {
+        setShowToaster(false);
+      }, 3000);
+      
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        birth: "",
+        city: "",
+        postalCode: "",
+      });
+      setErrors({});
+      
+      // Clear localStorage errors
+      ['error_firstName', 'error_lastName', 'error_email', 'error_birth', 'error_city', 'error_postalCode']
+        .forEach(key => localStorage.removeItem(key));
     }
-
-    // Display toaster
-    setShowToaster(true);
-
-    // Clear the form
-    setForm({
-      firstName: "",
-      lastName: "",
-      email: "",
-      birth: "",
-      city: "",
-      postalCode: "",
-    });
-    setErrors({});
-
-    // Clear localStorage errors
-    Object.keys(form).forEach((key) => {
-      localStorage.removeItem(`error_${key}`);
-    });
-
-    // Hide the toaster after 3 seconds
-    setTimeout(() => {
-      setShowToaster(false);
-    }, 3000);
   };
 
   return (

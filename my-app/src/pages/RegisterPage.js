@@ -8,12 +8,19 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const { addUser } = useUsers();
 
-  const handleRegistrationSuccess = (userData) => {
-    addUser(userData);
-    // Redirect to home page after successful registration
-    setTimeout(() => {
-      navigate('/');
-    }, 3000); // Allow time to see the toaster
+  const handleRegistrationSuccess = async (userData) => {
+    const result = await addUser(userData);
+    
+    if (result.success) {
+      // Redirect to home page only if registration was successful
+      setTimeout(() => {
+        navigate('/');
+      }, 3000); // Allow time to see the toaster
+      return { success: true };
+    } else {
+      // Error was already displayed by addUser (alert), don't redirect
+      return { success: false, error: result.error, status: result.status };
+    }
   };
 
   return (

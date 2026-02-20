@@ -225,7 +225,7 @@ describe("RegistrationForm / complete integration", () => {
   });
 
   test("Should submit valid form, display toaster, and call API through callback", async () => {
-    const mockCallback = jest.fn();
+    const mockCallback = jest.fn().mockResolvedValue({ success: true });
     
     render(<RegistrationForm onRegistrationSuccess={mockCallback} />);
 
@@ -233,9 +233,12 @@ describe("RegistrationForm / complete integration", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "S'enregistrer" }));
 
-    expect(
-      screen.getByText("Utilisateur enregistré avec succès !")
-    ).toBeInTheDocument();
+    // Wait for async operation and toaster to appear
+    await waitFor(() => {
+      expect(
+        screen.getByText("Utilisateur enregistré avec succès !")
+      ).toBeInTheDocument();
+    });
 
     expect(mockCallback).toHaveBeenCalledWith({
       name: "Jone Doe",
@@ -251,7 +254,10 @@ describe("RegistrationForm / complete integration", () => {
       postalCode: "30000-1234"
     });
 
-    expect(screen.getByLabelText("Prénom").value).toBe("");
+    // Wait for form to be cleared after success
+    await waitFor(() => {
+      expect(screen.getByLabelText("Prénom").value).toBe("");
+    });
   });
 
   test("Should clear localStorage errors after submit", async () => {
