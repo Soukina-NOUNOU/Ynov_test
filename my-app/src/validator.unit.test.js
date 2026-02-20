@@ -65,24 +65,28 @@ describe('calculateAge', () => {
 
 describe("validatePostalCode", () => {
   it("soould return null for a valid French postal code", () => {
-    expect(validatePostalCode("34000")).toBeNull();
+    expect(validatePostalCode("34000-1234")).toBeNull();
   });
 
-  it("should return error if postal code is not 5 digits", () => {
+  it("should return error if postal code is not in correct format", () => {
     expect(validatePostalCode("3400")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Le code postal doit être composé de 5 chiffres exactement.",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
     });
     expect(validatePostalCode("340000")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Le code postal doit être composé de 5 chiffres exactement.",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
+    });
+    expect(validatePostalCode("34000")).toEqual({
+      code: "INVALID_POSTAL_CODE",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
     });
   });
 
   it("should return error if postal code contains non-digit characters", () => {
-    expect(validatePostalCode("34A00")).toEqual({
+    expect(validatePostalCode("34A00-1234")).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Le code postal doit être composé de 5 chiffres exactement.",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
     });
   });
 
@@ -90,12 +94,12 @@ describe("validatePostalCode", () => {
     
     expect(validatePostalCode(12345)).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Le code postal doit être composé de 5 chiffres exactement.",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
     });
 
     expect(validatePostalCode(null)).toEqual({
       code: "INVALID_POSTAL_CODE",
-      message: "Le code postal doit être composé de 5 chiffres exactement.",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
     });
 
   });

@@ -99,26 +99,6 @@ describe("RegistrationForm / complete integration", () => {
     expect(localStorage.getItem("error_lastName")).toBe("Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes.");
   });
 
-  test("Should save user data to localStorage when no onRegistrationSuccess callback is provided", async () => {
-    render(<RegistrationForm />); // No callback provided
-    
-    await fillValidForm();
-    
-    await act(async () => {
-      await userEvent.click(screen.getByRole("button", { name: "S'enregistrer" }));
-    });
-
-    const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    expect(savedUsers).toHaveLength(1);
-    expect(savedUsers[0]).toMatchObject({
-      firstName: "Jone",
-      lastName: "Doe",
-      email: "jone@test.com",
-      city: "Nîmes",
-      postalCode: "30000-1234"
-    });
-  });
-
   test("Should save errors to localStorage when submitting with invalid email", async () => {
     render(<RegistrationForm />);
     

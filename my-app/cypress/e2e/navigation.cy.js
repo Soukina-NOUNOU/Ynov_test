@@ -35,7 +35,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('#email').type('marc.dupont@test.com');
       cy.get('#birth').type('1990-05-15');
       cy.get('#city').type('Paris');
-      cy.get('#postalCode').type('75001');
+      cy.get('#postalCode').type('75001-1234');
       
       // Verify that there are no validation errors
       cy.get('.error').should('not.exist');
@@ -70,7 +70,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
           lastName: 'Dupont',
           email: 'marc.dupont@test.com',
           city: 'Paris',
-          postalCode: '75001'
+          postalCode: '75001-1234'
         });
       });
     });
@@ -130,7 +130,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.contains('Le nom et prénom sont obligatoires et ne peuvent pas être vides.').should('be.visible');
       cy.contains('La date de naissance est obligatoire').should('be.visible');
       cy.contains('Le nom contient des caractères dangereux non autorisés.').should('be.visible');
-      cy.contains('Le code postal doit être composé de 5 chiffres exactement').should('be.visible');
+      cy.contains('Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).').should('be.visible');
       
       // Verify that the submit button remains disabled
       cy.get('button[type="submit"]').should('be.disabled');
@@ -172,7 +172,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
         expect(win.localStorage.getItem('error_lastName')).to.equal('Le nom et prénom sont obligatoires et ne peuvent pas être vides.');
         expect(win.localStorage.getItem('error_birth')).to.equal('La date de naissance est obligatoire');
         expect(win.localStorage.getItem('error_city')).to.equal('Le nom contient des caractères dangereux non autorisés.');
-        expect(win.localStorage.getItem('error_postalCode')).to.equal('Le code postal doit être composé de 5 chiffres exactement.');
+        expect(win.localStorage.getItem('error_postalCode')).to.equal('Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).');
       });
     });
   });
@@ -188,7 +188,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
         email: 'test.persistance@example.com',
         birth: '1995-03-10',
         city: 'Lyon',
-        postalCode: '69000'
+        postalCode: '69000-5678'
       };
       
       cy.window().then((win) => {

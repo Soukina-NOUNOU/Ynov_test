@@ -8,15 +8,15 @@ export function validatePostalCode(postalCode) {
     if (typeof postalCode !== "string") {
       return {
         code: "INVALID_POSTAL_CODE",
-        message: "Le code postal doit être composé de 5 chiffres exactement.",
+        message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
       };
     }
-    const regex = /^[0-9]{5}$/;
-    // Check if postal code is exactly 5 digits
+    const regex = /^[0-9]{5}-[0-9]{4}$/;
+    // Check if postal code is exactly 5 digits, a dash, then 4 digits
     if (!regex.test(postalCode)) {
       return {
         code: "INVALID_POSTAL_CODE",
-        message: "Le code postal doit être composé de 5 chiffres exactement.",
+        message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).",
       };
     }
     return null;

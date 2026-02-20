@@ -29,9 +29,9 @@ const HomePage = () => {
           <div className="user-cards">
             {sortedUsers.map((user, index) => (
               <div key={index} className="user-card">
-                <h4>{user.firstName} {user.lastName}</h4>
+                <h4>{user.name}</h4>
                 <p>Email: {user.email}</p>
-                <p>Ville: {user.city}</p>
+                <p>Ville: {user.address?.city}</p>
               </div>
             ))}
           </div>

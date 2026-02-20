@@ -163,8 +163,20 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Create user object
-    const newUser = { ...form };
+    // Create user object in jsonplaceholder format
+    const newUser = {
+      name: `${form.firstName} ${form.lastName}`,
+      email: form.email,
+      address: {
+        city: form.city,
+        zipcode: form.postalCode
+      },
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birth: form.birth,
+      city: form.city,
+      postalCode: form.postalCode
+    };
     
     // If a callback function is provided, use it
     if (onRegistrationSuccess) {

@@ -58,12 +58,15 @@ export const filterUsers = (users = [], searchTerm = '') => {
   if (!searchTerm.trim()) return users;
   
   const term = searchTerm.toLowerCase();
-  return users.filter(user => 
-    user.firstName?.toLowerCase().includes(term) ||
-    user.lastName?.toLowerCase().includes(term) ||
-    user.email?.toLowerCase().includes(term) ||
-    user.city?.toLowerCase().includes(term)
-  );
+  return users.filter(user => {
+    // Handle both formats: jsonplaceholder and legacy
+    const name = user.name || `${user.firstName || ''} ${user.lastName || ''}`;
+    const city = user.address?.city || user.city;
+    
+    return name?.toLowerCase().includes(term) ||
+           user.email?.toLowerCase().includes(term) ||
+           city?.toLowerCase().includes(term);
+  });
 };
 
 /**
@@ -74,8 +77,9 @@ export const filterUsers = (users = [], searchTerm = '') => {
  */
 export const sortUsersByName = (users = [], order = 'asc') => {
   return [...users].sort((a, b) => {
-    const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-    const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+    // Handle both jsonplaceholder format (name) and legacy format (firstName lastName)
+    const nameA = (a.name || `${a.firstName || ''} ${a.lastName || ''}`).toLowerCase().trim();
+    const nameB = (b.name || `${b.firstName || ''} ${b.lastName || ''}`).toLowerCase().trim();
     
     if (order === 'desc') {
       return nameB.localeCompare(nameA);

@@ -16,14 +16,14 @@ import {
 
 describe('User Utils - Unit Tests (Pure Logic)', () => {
   const mockUsers = [
-    { firstName: 'Alice', lastName: 'Dupont', email: 'alice@test.com', city: 'Paris' },
-    { firstName: 'Bob', lastName: 'Martin', email: 'bob@test.com', city: 'Lyon' },
-    { firstName: 'Caroline', lastName: 'Bernard', email: 'caroline@test.com', city: 'Marseille' }
+    { id: 1, name: 'Alice Dupont', email: 'alice@test.com', address: { city: 'Paris' } },
+    { id: 2, name: 'Bob Martin', email: 'bob@test.com', address: { city: 'Lyon' } },
+    { id: 3, name: 'Caroline Bernard', email: 'caroline@test.com', address: { city: 'Marseille' } }
   ];
 
   describe('addUserToList', () => {
     test('should add a user to empty list', () => {
-      const newUser = { firstName: 'Test', lastName: 'User', email: 'test@test.com' };
+      const newUser = { id: 4, name: 'Test User', email: 'test@test.com', address: { city: 'TestCity' } };
       const result = addUserToList(newUser, []);
       
       expect(result).toHaveLength(1);
@@ -31,7 +31,7 @@ describe('User Utils - Unit Tests (Pure Logic)', () => {
     });
 
     test('should add a user to existing list', () => {
-      const newUser = { firstName: 'David', lastName: 'Durand', email: 'david@test.com' };
+      const newUser = { id: 4, name: 'David Durand', email: 'david@test.com', address: { city: 'Nice' } };
       const result = addUserToList(newUser, mockUsers);
       
       expect(result).toHaveLength(4);
@@ -39,7 +39,7 @@ describe('User Utils - Unit Tests (Pure Logic)', () => {
     });
 
     test('should not modify original array', () => {
-      const newUser = { firstName: 'Test', lastName: 'User', email: 'test@test.com' };
+      const newUser = { id: 4, name: 'Test User', email: 'test@test.com', address: { city: 'TestCity' } };
       const originalUsers = [...mockUsers];
       addUserToList(newUser, mockUsers);
       
@@ -67,16 +67,16 @@ describe('User Utils - Unit Tests (Pure Logic)', () => {
       expect(result).toEqual(mockUsers);
     });
 
-    test('should filter by first name', () => {
+    test('should filter by name', () => {
       const result = filterUsers(mockUsers, 'Alice');
       expect(result).toHaveLength(1);
-      expect(result[0].firstName).toBe('Alice');
+      expect(result[0].name).toBe('Alice Dupont');
     });
 
     test('should filter by last name', () => {
       const result = filterUsers(mockUsers, 'Martin');
       expect(result).toHaveLength(1);
-      expect(result[0].lastName).toBe('Martin');
+      expect(result[0].name).toBe('Bob Martin');
     });
 
     test('should filter by email', () => {
@@ -88,13 +88,13 @@ describe('User Utils - Unit Tests (Pure Logic)', () => {
     test('should filter by city', () => {
       const result = filterUsers(mockUsers, 'Paris');
       expect(result).toHaveLength(1);
-      expect(result[0].city).toBe('Paris');
+      expect(result[0].address.city).toBe('Paris');
     });
 
     test('should be case insensitive', () => {
       const result = filterUsers(mockUsers, 'ALICE');
       expect(result).toHaveLength(1);
-      expect(result[0].firstName).toBe('Alice');
+      expect(result[0].name).toBe('Alice Dupont');
     });
 
     test('should return empty array for no matches', () => {
@@ -106,23 +106,23 @@ describe('User Utils - Unit Tests (Pure Logic)', () => {
   describe('sortUsersByName', () => {
     test('should sort users in ascending order by default', () => {
       const result = sortUsersByName(mockUsers);
-      expect(result[0].lastName).toBe('Bernard');
-      expect(result[1].lastName).toBe('Dupont');
-      expect(result[2].lastName).toBe('Martin');
+      expect(result[0].name).toBe('Alice Dupont');
+      expect(result[1].name).toBe('Bob Martin');
+      expect(result[2].name).toBe('Caroline Bernard');
     });
 
     test('should sort users in ascending order explicitly', () => {
       const result = sortUsersByName(mockUsers, 'asc');
-      expect(result[0].lastName).toBe('Bernard');
-      expect(result[1].lastName).toBe('Dupont');
-      expect(result[2].lastName).toBe('Martin');
+      expect(result[0].name).toBe('Alice Dupont');
+      expect(result[1].name).toBe('Bob Martin');
+      expect(result[2].name).toBe('Caroline Bernard');
     });
 
     test('should sort users in descending order', () => {
       const result = sortUsersByName(mockUsers, 'desc');
-      expect(result[0].lastName).toBe('Martin');
-      expect(result[1].lastName).toBe('Dupont');
-      expect(result[2].lastName).toBe('Bernard');
+      expect(result[0].name).toBe('Caroline Bernard');
+      expect(result[1].name).toBe('Bob Martin');
+      expect(result[2].name).toBe('Alice Dupont');
     });
 
     test('should not modify original array', () => {
