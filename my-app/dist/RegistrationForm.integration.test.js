@@ -160,17 +160,25 @@ describe("RegistrationForm / complete integration", () => {
       }));
     });
     expect(mockCallback).toHaveBeenCalledWith({
-      name: "Jone Doe",
-      email: "jone@test.com",
-      address: {
+      userData: {
+        name: "Jone Doe",
+        email: "jone@test.com",
+        address: {
+          city: "Nîmes",
+          zipcode: "30000-1234"
+        },
+        firstName: "Jone",
+        lastName: "Doe",
+        birth: "1990-08-19",
         city: "Nîmes",
-        zipcode: "30000-1234"
+        postalCode: "30000-1234"
       },
-      firstName: "Jone",
-      lastName: "Doe",
-      birth: "1990-08-19",
-      city: "Nîmes",
-      postalCode: "30000-1234"
+      metadata: expect.objectContaining({
+        hasAutoSavedData: expect.any(Boolean),
+        submissionTimestamp: expect.any(String),
+        formVersion: "2.0.0",
+        autoSaveEnabled: true
+      })
     });
   });
   test("Should save errors to localStorage when submitting with invalid email", async () => {
@@ -422,17 +430,25 @@ describe("RegistrationForm / complete integration", () => {
       expect(_react.screen.getByText("Utilisateur enregistré avec succès !")).toBeInTheDocument();
     });
     expect(mockCallback).toHaveBeenCalledWith({
-      name: "Jone Doe",
-      email: "jone@test.com",
-      address: {
+      userData: {
+        name: "Jone Doe",
+        email: "jone@test.com",
+        address: {
+          city: "Nîmes",
+          zipcode: "30000-1234"
+        },
+        firstName: "Jone",
+        lastName: "Doe",
+        birth: "1990-08-19",
         city: "Nîmes",
-        zipcode: "30000-1234"
+        postalCode: "30000-1234"
       },
-      firstName: "Jone",
-      lastName: "Doe",
-      birth: "1990-08-19",
-      city: "Nîmes",
-      postalCode: "30000-1234"
+      metadata: expect.objectContaining({
+        hasAutoSavedData: expect.any(Boolean),
+        submissionTimestamp: expect.any(String),
+        formVersion: "2.0.0",
+        autoSaveEnabled: true
+      })
     });
     expect(_react.screen.getByLabelText("Prénom").value).toBe("");
   });
