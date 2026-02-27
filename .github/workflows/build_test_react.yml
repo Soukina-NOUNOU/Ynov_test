@@ -123,7 +123,7 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           npm run build-npm-ci
           
-          # Get current local and published versions
+          # Get current versions for info
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           LOCAL_VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "0.0.0")
@@ -132,7 +132,7 @@ jobs:
           echo "Local version: $LOCAL_VERSION"
           echo "Published version: $PUBLISHED_VERSION"
           
-          # Always increment version before publishing to avoid conflicts
+          # Increment patch version
           echo " Incrementing patch version..."
           npm version patch
           NEW_VERSION=$(node -p "require('./package.json').version")
