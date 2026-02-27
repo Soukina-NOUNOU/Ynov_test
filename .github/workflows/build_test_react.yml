@@ -132,13 +132,11 @@ jobs:
           echo "Local version: $LOCAL_VERSION"
           echo "Published version: $PUBLISHED_VERSION"
           
-          # Check if we need to increment version
-          if [ "$LOCAL_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Versions match, incrementing patch version..."
-            npm version patch
-          else
-            echo "Version is different, proceeding..."
-          fi
+          # Always increment version before publishing to avoid conflicts
+          echo " Incrementing patch version..."
+          npm version patch
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "✨ New version: $NEW_VERSION"
           
           # Check if the package already exists on npm
           if npm view $PACKAGE_NAME version > /dev/null 2>&1; then
