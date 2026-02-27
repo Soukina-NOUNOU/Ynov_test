@@ -7,6 +7,7 @@ import {
 import calculateAge from "./module";
 import "./RegistrationForm.css";
 
+// Auto-save feature version 0.2.0 - Enhanced user experience with data persistence
 export default function RegistrationForm({ onRegistrationSuccess }) {
   const [form, setForm] = useState({
     firstName: "",
