@@ -62,7 +62,15 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       
       // Verify that the POST API call was made
       cy.wait('@addUser').then((interception) => {
-        expect(interception.request.body).to.deep.include({
+        // v2.0.0 structure: callback now receives {userData, metadata}
+        const requestBody = interception.request.body;
+        
+        // Verify main structure
+        expect(requestBody).to.have.property('userData');
+        expect(requestBody).to.have.property('metadata');
+        
+        // Verify userData content
+        expect(requestBody.userData).to.deep.include({
           name: 'Marc Dupont',
           email: 'marc.dupont@test.com',
           address: {
@@ -70,6 +78,12 @@ describe('Tests E2E Navigation Multi-Pages', () => {
             zipcode: '75001-1234'
           }
         });
+        
+        // Verify metadata content
+        expect(requestBody.metadata).to.have.property('formVersion', '2.0.0');
+        expect(requestBody.metadata).to.have.property('autoSaveEnabled', true);
+        expect(requestBody.metadata).to.have.property('submissionTimestamp');
+        expect(requestBody.metadata).to.have.property('hasAutoSavedData');
       });
 
       // 4. Redirection or Navigation to Home
