@@ -108,6 +108,11 @@ jobs:
         
       - name: Authenticate with npm
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+        
+      - name: Debug npm auth
+        run: |
+          echo "Testing npm authentication..."
+          npm whoami || echo " npm auth failed"
           
       - name: build and publish package on NPM
         working-directory: my-app
