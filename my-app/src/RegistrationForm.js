@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   validatePostalCode,
   validateIdentity,
@@ -18,6 +18,37 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
   });
   const [errors, setErrors] = useState({});
   const [showToaster, setShowToaster] = useState(false);
+  const [isAutoSaved, setIsAutoSaved] = useState(false);
+
+  // Auto-save and restore functionality
+  useEffect(() => {
+    // Restore form data from localStorage on component mount
+    const savedFormData = localStorage.getItem("registrationForm_draft");
+    if (savedFormData) {
+      try {
+        const parsedData = JSON.parse(savedFormData);
+        setForm(parsedData);
+        setIsAutoSaved(true);
+      } catch (error) {
+        console.warn("Failed to restore form data from localStorage");
+      }
+    }
+  }, []);
+
+  const autoSaveForm = (formData) => {
+    localStorage.setItem("registrationForm_draft", JSON.stringify(formData));
+    setIsAutoSaved(true);
+    
+    // Clear the auto-saved indicator after 2 seconds
+    setTimeout(() => {
+      setIsAutoSaved(false);
+    }, 2000);
+  };
+
+  const clearAutoSavedData = () => {
+    localStorage.removeItem("registrationForm_draft");
+    setIsAutoSaved(false);
+  };
 
   // Real-time validation for a specific field
   const validateField = (name, value) => {
@@ -74,7 +105,11 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const updatedForm = { ...form, [name]: value };
+    setForm(updatedForm);
+
+    // Auto-save the form data
+    autoSaveForm(updatedForm);
 
     // Real-time validation
     const error = validateField(name, value);
@@ -209,6 +244,9 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
           // Clear localStorage errors
           ['error_firstName', 'error_lastName', 'error_email', 'error_birth', 'error_city', 'error_postalCode']
             .forEach(key => localStorage.removeItem(key));
+          
+          // Clear auto-saved form data
+          clearAutoSavedData();
         }
         // If result.success === false, error was already shown by UserContext alert
       } catch (error) {
@@ -241,6 +279,13 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
 
   return (
     <>
+      {/* Auto-save indicator */}
+      {isAutoSaved && (
+        <div className="toaster info" style={{backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid #90caf9'}}>
+          💾 Brouillon sauvegardé automatiquement
+        </div>
+      )}
+
       {/* Success toaster */}
       {showToaster && (
         <div className="toaster success">
@@ -330,6 +375,35 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
         >
           S'enregistrer
         </button>
+        
+        {/* Clear draft button */}
+        {localStorage.getItem("registrationForm_draft") && (
+          <button
+            type="button"
+            onClick={() => {
+              clearAutoSavedData();
+              setForm({
+                firstName: "",
+                lastName: "",
+                email: "",
+                birth: "",
+                city: "",
+                postalCode: "",
+              });
+              setErrors({});
+            }}
+            style={{
+              marginTop: "10px",
+              backgroundColor: "#f5f5f5",
+              color: "#666",
+              border: "1px solid #ddd",
+              padding: "8px 16px",
+              fontSize: "14px"
+            }}
+          >
+            🗑️ Vider le brouillon
+          </button>
+        )}
       </form>
     </>
   );
