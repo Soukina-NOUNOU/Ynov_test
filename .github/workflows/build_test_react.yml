@@ -10,7 +10,7 @@ env:
   GITHUB_PAGES_URL: https://Soukina-NOUNOU.github.io/Ynov_test
 
 jobs:
-  build_test:
+  build-and-test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -78,8 +78,45 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./my-app/build
+          
+  publish-npm:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [21.x]
+    
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+          
+      - name: Install dependencies
+        working-directory: my-app
+        run: npm ci
+          
+      - name: build and publish package on NPM
+        working-directory: my-app
+        run: |
+          git config --global user.email "soukina.nounou@gmail.com"
+          git config --global user.name "Soukina-NOUNOU"
+          npm run build-npm
+          npm version patch
+          npm publish
+          git add .
+          git commit -m "updated version"
+          git push
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
   deploy:
-    needs: build_test
+    needs: publish-npm
     permissions:
       pages: write
       id-token: write
