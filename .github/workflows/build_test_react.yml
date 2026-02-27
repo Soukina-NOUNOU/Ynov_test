@@ -113,7 +113,7 @@ jobs:
         working-directory: my-app
         run: |
           git config --global user.email "soukina.nounou@gmail.com"
-          git config --global user.name "Soukina-NOUNOU"
+          git config --global user.name "soukina"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           npm run build-npm-ci
           npm version patch
