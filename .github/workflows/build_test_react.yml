@@ -83,6 +83,9 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write
+      
     strategy:
       matrix:
         node-version: [21.x]
@@ -90,7 +93,9 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
-        
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -100,20 +105,22 @@ jobs:
       - name: Install dependencies
         working-directory: my-app
         run: npm ci
+        
+      - name: Authenticate with npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           
       - name: build and publish package on NPM
         working-directory: my-app
         run: |
           git config --global user.email "soukina.nounou@gmail.com"
           git config --global user.name "Soukina-NOUNOU"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           npm run build-npm-ci
           npm version patch
           npm publish
           git add .
           git commit -m "updated version"
           git push
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
   deploy:
     needs: publish-npm
