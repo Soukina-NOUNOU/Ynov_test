@@ -109,11 +109,6 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_NEW }}" > ~/.npmrc
           echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-        
-      - name: Debug npm auth
-        run: |
-          echo "Testing npm authentication..."
-          npm whoami || echo " npm auth failed"
           
       - name: build and publish package on NPM
         working-directory: my-app
@@ -123,33 +118,37 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           npm run build-npm-ci
           
-          # Get current versions for info
+          # Get current versions
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           LOCAL_VERSION=$(node -p "require('./package.json').version")
           PUBLISHED_VERSION=$(npm view $PACKAGE_NAME version 2>/dev/null || echo "0.0.0")
           
           echo "Package: $PACKAGE_NAME"
-          echo "Local version: $LOCAL_VERSION"
+          echo "Local version: $LOCAL_VERSION" 
           echo "Published version: $PUBLISHED_VERSION"
           
-          # Increment patch version
-          echo " Incrementing patch version..."
-          npm version patch
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "✨ New version: $NEW_VERSION"
-          
-          # Check if the package already exists on npm
-          if npm view $PACKAGE_NAME version > /dev/null 2>&1; then
-            echo "Package exists, publishing update..."
-            npm publish
+          # Compare versions to decide if publication is needed
+          if [ "$LOCAL_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version $LOCAL_VERSION already published, skipping publication"
+            echo "Pipeline continues without publishing"
           else
-            echo "New package, publishing with public access..."
-            npm publish --access public
+            echo "Publishing new version $LOCAL_VERSION..."
+            
+            if npm view $PACKAGE_NAME version > /dev/null 2>&1; then
+              echo "Package exists, publishing update..."
+              npm publish
+            else
+              echo "New package, publishing with public access..."
+              npm publish --access public
+            fi
+            
+            echo "Package published successfully!"
+            
+            # Commit version changes if any
+            git add .
+            git commit -m "published version $LOCAL_VERSION" || echo "Nothing to commit"
+            git push
           fi
-          
-          git add .
-          git commit -m "updated version" || echo "Nothing to commit"
-          git push
         
   deploy:
     needs: publish-npm
