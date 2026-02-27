@@ -7,7 +7,8 @@ import {
 import calculateAge from "./module";
 import "./RegistrationForm.css";
 
-// Auto-save feature version 0.2.0 - Enhanced user experience with data persistence
+// Auto-save feature version 2.0.0 - BREAKING CHANGE: New callback payload structure
+// BREAKING CHANGE: onRegistrationSuccess callback now receives { userData, metadata } instead of user object directly
 export default function RegistrationForm({ onRegistrationSuccess }) {
   const [form, setForm] = useState({
     firstName: "",
@@ -217,10 +218,21 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
       postalCode: form.postalCode
     };
     
+    // BREAKING CHANGE v2.0.0: New callback payload structure with metadata
+    const registrationPayload = {
+      userData: newUser,  // User data moved to userData property
+      metadata: {
+        hasAutoSavedData: localStorage.getItem("registrationForm_draft") !== null,
+        submissionTimestamp: new Date().toISOString(),
+        formVersion: "2.0.0",
+        autoSaveEnabled: true
+      }
+    };
+    
     // Use callback function to send user to API
     if (onRegistrationSuccess) {
       try {
-        const result = await onRegistrationSuccess(newUser);
+        const result = await onRegistrationSuccess(registrationPayload);
         
         // Only show success toaster if operation was successful
         if (result && result.success !== false) {

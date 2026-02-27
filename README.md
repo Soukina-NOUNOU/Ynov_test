@@ -99,8 +99,27 @@ La pipeline `build_test_react.yml` exécute automatiquement :
 
 ### URLs de Déploiement
 
-- ** Application** : https://Soukina-NOUNOU.github.io/Ynov_test
-- ** Documentation** : https://Soukina-NOUNOU.github.io/Ynov_test/docs/
-- ** API** : https://jsonplaceholder.typicode.com (publique)
+- Application : https://Soukina-NOUNOU.github.io/Ynov_test
+- Documentation : https://Soukina-NOUNOU.github.io/Ynov_test/docs/
+- API : https://jsonplaceholder.typicode.com (publique)
+
+## Package NPM
+
+Disponible en tant que package NPM :
+https://www.npmjs.com/package/soukina-ci-cd-ynov
+
+### Historique des Versions
+
+#### Version 0.1.3 - Correctif (Patch)
+
+La gestion des erreur pour la validation du code postale à était amélioré.
+
+#### Version 0.2.0 - Fonctionnalité Auto-Save (Minor)
+
+Amélioration de l'expérience utilisateur avec l'ajout de la fonctionnalité auto-save
+
+#### Version 2.0.0 - Changement Majeur (BREAKING CHANGE)
+
+Pour pouvoir inclure des métadonnées, update de la structure du callback onRegisterSuccess.
 
 Pour plus de détails sur la stratégie de tests: [TEST_PLAN.md](/my-app/src/TEST_PLAN.md).
