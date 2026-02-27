@@ -146,6 +146,9 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     if (postalCodeError) {
       newErrors.postalCode = postalCodeError.message;
       localStorage.setItem("error_postalCode", postalCodeError.message);
+    } else {
+      // Clear any existing postal code errors when validation passes
+      localStorage.removeItem("error_postalCode");
     }
 
     // Validate city
