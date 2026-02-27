@@ -1,0 +1,30 @@
+.register-page {
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.navigation-header {
+  max-width: 800px;
+  margin: 0 auto;
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  display: inline-block;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.back-link:hover {
+  background-color: #f8f9fa;
+  color: #2980b9;
+}
+
+.register-content {
+  max-width: 600px;
+  margin: 0 auto;
+}

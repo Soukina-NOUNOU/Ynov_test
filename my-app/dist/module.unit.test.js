@@ -1,0 +1,90 @@
+"use strict";
+
+var _module = _interopRequireDefault(require("./module"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+/**
+ * @function calculateAge
+ */
+
+let people20years;
+beforeEach(() => {
+  let date = new Date();
+  people20years = {
+    birth: new Date(date.setFullYear(date.getFullYear() - 20))
+  };
+});
+describe('calculateAge Unit Test Suites', () => {
+  it('should return  a correct age', () => {
+    const loise = {
+      birth: new Date('08/19/1993')
+    };
+    expect((0, _module.default)(loise)).toBe(32);
+  });
+  it('should throw a "missing param p" error', () => {
+    expect(() => (0, _module.default)()).toThrow("missing param p");
+  });
+  it('should throws if parameter is not an object', () => {
+    expect(() => (0, _module.default)("hello")).toThrow("format is not correct");
+  });
+  it('should throws if parameter does not have a birth property', () => {
+    expect(() => (0, _module.default)({})).toThrow("birth property is missing");
+  });
+  it('should throws if birth is not a Date or invalide date', () => {
+    expect(() => (0, _module.default)({
+      birth: 124578
+    })).toThrow('Not valid birth date');
+  });
+  it('sould throws if birth is an impossible date', () => {
+    expect(() => (0, _module.default)({
+      birth: new Date('31/02/1990')
+    })).toThrow('This date is impossible');
+  });
+  it('should throws if birth is in the future', () => {
+    expect(() => (0, _module.default)({
+      birth: new Date(Date.now() + 100000)
+    })).toThrow('Il est impossible de renseigner une date de naissance dans le futur');
+  });
+  it('sould throws if birth is too far in the past', () => {
+    expect(() => (0, _module.default)({
+      birth: new Date('01/01/1800')
+    })).toThrow('This date is too far in the past');
+  });
+  it('sould correctly calculates age regardless of the current date', () => {
+    const loise = {
+      birth: new Date('08/19/1993')
+    };
+    const realDateNow = Date.now;
+    Date.now = () => new Date('08/19/2020').getTime();
+    expect((0, _module.default)(loise)).toBe(27);
+    Date.now = realDateNow;
+  });
+  it('should return a correct age', () => {
+    expect((0, _module.default)(people20years)).toEqual(20);
+  });
+
+  // Test edge cases for leap years and date boundaries
+  it('should handle leap year correctly (29 February)', () => {
+    const user = {
+      birth: new Date('2000-02-29') // Leap year
+    };
+    expect((0, _module.default)(user)).toBeGreaterThan(0);
+  });
+  it('should handle person born on leap day when current year is not leap year', () => {
+    const dateNow = Date.now;
+    Date.now = () => new Date('2023-03-01').getTime(); // 2023 is not a leap year
+    expect((0, _module.default)({
+      birth: new Date('2000-02-29')
+    })).toBe(23);
+    Date.now = dateNow;
+  });
+  it('should handle null object property', () => {
+    expect(() => (0, _module.default)({
+      birth: null
+    })).toThrow('Not valid birth date');
+  });
+  it('should handle undefined birth property in object', () => {
+    expect(() => (0, _module.default)({
+      birth: undefined
+    })).toThrow('Not valid birth date');
+  });
+});

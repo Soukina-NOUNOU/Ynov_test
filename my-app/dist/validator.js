@@ -1,0 +1,96 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.validateEmail = validateEmail;
+exports.validateIdentity = validateIdentity;
+exports.validatePostalCode = validatePostalCode;
+/**
+ * Validate a French postal code
+ * @param {string} postalCode The postal code to validate.
+ * @returns {Object|null} An error object if the postal code is invalid, or null if it is valid.
+ */
+function validatePostalCode(postalCode) {
+  // Check if postal code is a string
+  if (typeof postalCode !== "string") {
+    return {
+      code: "INVALID_POSTAL_CODE",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789)."
+    };
+  }
+  const regex = /^[0-9]{5}-[0-9]{4}$/;
+  // Check if postal code is exactly 5 digits, a dash, then 4 digits
+  if (!regex.test(postalCode)) {
+    return {
+      code: "INVALID_POSTAL_CODE",
+      message: "Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789)."
+    };
+  }
+  return null;
+}
+
+/**
+ * Validate first name and last name
+ * @param {string} name The name to validate.
+ * @returns {Object|null} An error object if the first name or last name is invalid, or null if they are valid.
+ */
+function validateIdentity(name) {
+  if (typeof name !== "string" || name.trim().length === 0) {
+    return {
+      code: "INVALID_IDENTITY",
+      message: "Le nom et prénom sont obligatoires et ne peuvent pas être vides."
+    };
+  }
+
+  // Check minimum length (2 characters)
+  if (name.trim().length < 2) {
+    return {
+      code: "INVALID_LENGTH",
+      message: "Le prénom doit contenir au moins 2 caractères"
+    };
+  }
+
+  // Simple XSS detection: check for common XSS attack vectors
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes("<script") || lowerName.includes("</script>") || /<[^>]+>/.test(name)) {
+    return {
+      code: "XSS_DETECTED",
+      message: "Le nom contient des caractères dangereux non autorisés."
+    };
+  }
+
+  //Allow letters, spaces, hyphens and apostrophes
+  const regex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s-']+$/;
+  if (!regex.test(name)) {
+    return {
+      code: "INVALID_IDENTITY",
+      message: "Le nom ne doit contenir que des lettres, espaces, tirets et apostrophes."
+    };
+  }
+  return null;
+}
+
+/**
+ * Validate an email address
+ * @param {string} email The email address to validate.
+ * @returns {Object|null} An error object if the email address is invalid, or null if it is valid.
+ */
+function validateEmail(email) {
+  // Check if email is a string
+  if (typeof email !== "string") {
+    return {
+      code: "INVALID_EMAIL",
+      message: "L'email doit être une adresse email valide."
+    };
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Check if email is in a valid format
+  if (!emailRegex.test(email)) {
+    return {
+      code: "INVALID_EMAIL",
+      message: "Veuillez saisir une adresse email valide (test@test.com)."
+    };
+  }
+  return null;
+}
