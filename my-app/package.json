@@ -1,7 +1,7 @@
 {
-  "name": "my-app",
+  "name": "soukina-ci-cd-ynov",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "homepage": "https://Soukina-NOUNOU.github.io/Ynov_test/",
   "dependencies": {
     "@testing-library/dom": "^9.3.4",
@@ -12,9 +12,11 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.0",
     "react-scripts": "5.0.1",
+    "soukina-ci-cd-ynov": "^0.1.0",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
+    "@babel/cli": "^7.28.6",
     "@testing-library/react": "^14.3.1",
     "@types/node": "^25.3.0",
     "cypress": "^15.10.0",
@@ -27,6 +29,7 @@
     "test": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "jsdoc": "jsdoc -c jsdoc.config.json -r -d ./docs",
+    "build-npm-ci": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src --out-dir dist --copy-files",
     "cypress": "cypress open"
   },
   "eslintConfig": {
