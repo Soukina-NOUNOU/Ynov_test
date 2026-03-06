@@ -150,6 +150,22 @@ jobs:
             git push
           fi
         
+  docker-integration-test:
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        
+      - name: Build MySQL Image
+        working-directory: my-app
+        run: docker build -t migration_mysql .
+          
+      - name: Build Python FastAPI Image
+        working-directory: my-app
+        run: docker build -t python_fast_api -f python.Dockerfile .
+        
   deploy:
     needs: publish-npm
     permissions:
