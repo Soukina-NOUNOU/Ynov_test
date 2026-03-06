@@ -186,6 +186,25 @@ jobs:
             -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
             -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
             python_fast_api
+
+      - name: Test API Endpoint
+        run: |
+          # Check HTTP status code is 200
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
+          if [ "$response" != "200" ]; then
+            echo "API test failed with status code: $response"
+            exit 1
+          fi
+          
+      - name: Validate API Response
+        run: |
+          # Count users in JSON response
+          users_count=$(curl -s http://localhost:8000/users | jq '.utilisateurs | length')
+          if [ "$users_count" -eq 0 ]; then
+            echo "API test failed: No users found"
+            exit 1
+          fi
+          echo "API validation successful: $users_count users found"
         
   deploy:
     needs: publish-npm
