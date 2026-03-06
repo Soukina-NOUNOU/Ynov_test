@@ -181,18 +181,26 @@ jobs:
       - name: Launch Python API Container  
         run: |
           docker run -d --name python-container -p 8000:8000 \
-            -e MYSQL_HOST=localhost \
+            -e MYSQL_HOST=migration_container \
             -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
             -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
             -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            --link migration_container:mysql \
             python_fast_api
 
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to start..."
+          sleep 10
+          docker ps
+          
       - name: Test API Endpoint
         run: |
           # Check HTTP status code is 200
           response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
           if [ "$response" != "200" ]; then
             echo "API test failed with status code: $response"
+            docker logs python-container
             exit 1
           fi
           
