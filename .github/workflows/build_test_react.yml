@@ -166,6 +166,27 @@ jobs:
         working-directory: my-app
         run: docker build -t python_fast_api -f python.Dockerfile .
         
+      - name: Launch MySQL Container
+        run: |
+          docker run -d --name migration_container -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
+            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            migration_mysql
+            
+      - name: Wait MySQL initialization
+        run: sleep 15
+        
+      - name: Launch Python API Container  
+        run: |
+          docker run -d --name python-container -p 8000:8000 \
+            -e MYSQL_HOST=localhost \
+            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+            -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
+            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+            python_fast_api
+        
   deploy:
     needs: publish-npm
     permissions:
