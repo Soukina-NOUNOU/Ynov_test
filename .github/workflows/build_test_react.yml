@@ -213,6 +213,15 @@ jobs:
             exit 1
           fi
           echo "API validation successful: $users_count users found"
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Tag and Push API Image to Docker Hub
+        run: |
+          docker tag python_fast_api ${{ secrets.DOCKERHUB_USERNAME }}/python_fast_api:0.0.1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/python_fast_api:0.0.1
+          echo "Image successfully pushed to Docker Hub!"
         
   deploy:
     needs: publish-npm
