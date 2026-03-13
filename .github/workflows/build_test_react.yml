@@ -157,56 +157,35 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
-        
-      - name: Build MySQL Image
-        working-directory: my-app
-        run: docker build -t migration_mysql .
-          
-      - name: Build Python FastAPI Image
-        working-directory: my-app
-        run: docker build -t python_fast_api -f python.Dockerfile .
-        
-      - name: Launch MySQL Container
-        run: |
-          docker run -d --name migration_container -p 3306:3306 \
-            -e MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
-            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-            -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
-            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-            migration_mysql
-            
-      - name: Wait MySQL initialization
-        run: sleep 15
-        
-      - name: Launch Python API Container  
-        run: |
-          docker run -d --name python-container -p 8000:8000 \
-            -e MYSQL_HOST=migration_container \
-            -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
-            -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
-            -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
-            --link migration_container:mysql \
-            python_fast_api
 
-      - name: Wait for API to be ready
+      - name: Create .env file
+        working-directory: my-app
         run: |
-          echo "Waiting for API to start..."
-          sleep 10
-          docker ps
-          
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}" >> .env
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+
+      - name: Build and start services
+        working-directory: my-app
+        run: docker compose up -d --build --wait
+
+      - name: Check all containers are running
+        working-directory: my-app
+        run: docker compose ps
+
       - name: Test API Endpoint
+        working-directory: my-app
         run: |
-          # Check HTTP status code is 200
           response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
           if [ "$response" != "200" ]; then
             echo "API test failed with status code: $response"
-            docker logs python-container
+            docker compose logs api
             exit 1
           fi
           
       - name: Validate API Response
         run: |
-          # Count users in JSON response
           users_count=$(curl -s http://localhost:8000/users | jq '.utilisateurs | length')
           if [ "$users_count" -eq 0 ]; then
             echo "API test failed: No users found"
@@ -219,7 +198,7 @@ jobs:
 
       - name: Tag and Push API Image to Docker Hub
         run: |
-          docker tag python_fast_api ${{ secrets.DOCKERHUB_USERNAME }}/python_fast_api:0.0.1
+          docker tag my-app-api ${{ secrets.DOCKERHUB_USERNAME }}/python_fast_api:0.0.1
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/python_fast_api:0.0.1
           echo "Image successfully pushed to Docker Hub!"
         

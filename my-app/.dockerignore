@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Build outputs
+build/
+dist/
+coverage/
+docs/
+
+# Environment & secrets
+.env
+.env.*
+
+# Docker
+docker-compose*.yml
+*.Dockerfile
+
+# Git
+.git/
+.gitignore
+
+# Tests
+cypress/
+*.test.js
+*.spec.ts
+
+# Misc
+README.md
+*.md
+.DS_Store
