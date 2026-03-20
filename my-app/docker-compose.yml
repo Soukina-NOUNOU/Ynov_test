@@ -33,8 +33,8 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      # curl is not available in python:slim, so we use Python's built-in urllib (urlopen raises an exception on failure, exiting with code 1)
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('${REACT_APP_API_URL}/users')\""]
+      # Socket check: verifies uvicorn is listening on port 8000 without triggering a MySQL query
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.settimeout(3); s.connect(('localhost', 8000)); s.close()\""]
       interval: 10s
       timeout: 5s
       retries: 5
