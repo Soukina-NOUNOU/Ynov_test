@@ -7,8 +7,6 @@ import {
 import calculateAge from "./module";
 import "./RegistrationForm.css";
 
-// Auto-save feature version 2.0.0 - BREAKING CHANGE: New callback payload structure
-// BREAKING CHANGE: onRegistrationSuccess callback now receives { userData, metadata } instead of user object directly
 export default function RegistrationForm({ onRegistrationSuccess }) {
   const [form, setForm] = useState({
     firstName: "",
@@ -22,9 +20,7 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
   const [showToaster, setShowToaster] = useState(false);
   const [isAutoSaved, setIsAutoSaved] = useState(false);
 
-  // Auto-save and restore functionality
   useEffect(() => {
-    // Restore form data from localStorage on component mount
     const savedFormData = localStorage.getItem("registrationForm_draft");
     if (savedFormData) {
       try {
@@ -41,7 +37,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     localStorage.setItem("registrationForm_draft", JSON.stringify(formData));
     setIsAutoSaved(true);
     
-    // Clear the auto-saved indicator after 2 seconds
     setTimeout(() => {
       setIsAutoSaved(false);
     }, 2000);
@@ -52,7 +47,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     setIsAutoSaved(false);
   };
 
-  // Real-time validation for a specific field
   const validateField = (name, value) => {
     let error = null;
 
@@ -91,7 +85,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     return error;
   };
 
-  // Check if the form is valid
   const isFormValid = () => {
     const hasAllFields =
       form.firstName &&
@@ -110,14 +103,11 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     const updatedForm = { ...form, [name]: value };
     setForm(updatedForm);
 
-    // Auto-save the form data
     autoSaveForm(updatedForm);
 
-    // Real-time validation
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
 
-    // Clean up localStorage for the specific field error
     if (error) {
       localStorage.setItem(`error_${name}`, error);
     } else {
@@ -127,7 +117,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    // Full validation on focus out
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
 
@@ -141,28 +130,24 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate firstname
     const firstNameError = validateIdentity(form.firstName);
     if (firstNameError) {
       newErrors.firstName = firstNameError.message;
       localStorage.setItem("error_firstName", firstNameError.message);
     }
 
-    // Validate lastname
     const lastNameError = validateIdentity(form.lastName);
     if (lastNameError) {
       newErrors.lastName = lastNameError.message;
       localStorage.setItem("error_lastName", lastNameError.message);
     }
 
-    // Validate email
     const emailError = validateEmail(form.email);
     if (emailError) {
       newErrors.email = emailError.message;
       localStorage.setItem("error_email", emailError.message);
     }
 
-    // Validate birthdate
     if (!form.birth) {
       newErrors.birth = "La date de naissance est obligatoire";
       localStorage.setItem(
@@ -178,17 +163,14 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
       }
     }
 
-    // Validate postal code
     const postalCodeError = validatePostalCode(form.postalCode);
     if (postalCodeError) {
       newErrors.postalCode = postalCodeError.message;
       localStorage.setItem("error_postalCode", postalCodeError.message);
     } else {
-      // Clear any existing postal code errors when validation passes
       localStorage.removeItem("error_postalCode");
     }
 
-    // Validate city
     const cityError = validateIdentity(form.city);
     if (cityError) {
       newErrors.city = cityError.message;
@@ -203,7 +185,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Create user object in jsonplaceholder format
     const newUser = {
       name: `${form.firstName} ${form.lastName}`,
       email: form.email,
@@ -218,9 +199,8 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
       postalCode: form.postalCode
     };
     
-    // BREAKING CHANGE v2.0.0: New callback payload structure with metadata
     const registrationPayload = {
-      userData: newUser,  // User data moved to userData property
+      userData: newUser,
       metadata: {
         hasAutoSavedData: localStorage.getItem("registrationForm_draft") !== null,
         submissionTimestamp: new Date().toISOString(),
@@ -229,21 +209,17 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
       }
     };
     
-    // Use callback function to send user to API
     if (onRegistrationSuccess) {
       try {
         const result = await onRegistrationSuccess(registrationPayload);
         
-        // Only show success toaster if operation was successful
         if (result && result.success !== false) {
           setShowToaster(true);
           
-          // Hide the toaster after 3 seconds
           setTimeout(() => {
             setShowToaster(false);
           }, 3000);
           
-          // Clear the form only on success
           setForm({
             firstName: "",
             lastName: "",
@@ -254,22 +230,17 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
           });
           setErrors({});
           
-          // Clear localStorage errors
           ['error_firstName', 'error_lastName', 'error_email', 'error_birth', 'error_city', 'error_postalCode']
             .forEach(key => localStorage.removeItem(key));
           
-          // Clear auto-saved form data
           clearAutoSavedData();
         }
-        // If result.success === false, error was already shown by UserContext alert
       } catch (error) {
         console.error('Unexpected error during registration:', error);
       }
     } else {
-      // Fallback behavior if no callback provided
       setShowToaster(true);
       
-      // Hide the toaster after 3 seconds
       setTimeout(() => {
         setShowToaster(false);
       }, 3000);
@@ -283,8 +254,6 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
         postalCode: "",
       });
       setErrors({});
-      
-      // Clear localStorage errors
       ['error_firstName', 'error_lastName', 'error_email', 'error_birth', 'error_city', 'error_postalCode']
         .forEach(key => localStorage.removeItem(key));
     }
@@ -292,14 +261,12 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
 
   return (
     <>
-      {/* Auto-save indicator */}
       {isAutoSaved && (
         <div className="toaster info" style={{backgroundColor: '#e3f2fd', color: '#1565c0', border: '1px solid #90caf9'}}>
           💾 Brouillon sauvegardé automatiquement
         </div>
       )}
 
-      {/* Success toaster */}
       {showToaster && (
         <div className="toaster success">
           Utilisateur enregistré avec succès !
@@ -377,6 +344,9 @@ export default function RegistrationForm({ onRegistrationSuccess }) {
           value={form.postalCode}
           onChange={handleChange}
           onBlur={handleBlur}
+          maxLength={5}
+          pattern="[0-9]{5}"
+          placeholder="30000"
           className={errors.postalCode ? "error-input" : ""}
         />
         {errors.postalCode && <p className="error">{errors.postalCode}</p>}

@@ -5,9 +5,9 @@ import axios from 'axios';
 // Mock axios
 jest.mock('axios');
 
-const mockUsers = [
-  { id: 1, name: 'Leanne Graham' },
-  { id: 2, name: 'Ervin Howell' },
+const mockUsersRaw = [
+  [1, 'Leanne', 'Graham', 'leanne@test.com', '1990-01-01', 'Paris', '75001'],
+  [2, 'Ervin', 'Howell', 'ervin@test.com', '1985-05-10', 'Lyon', '69001'],
 ];
 
 const TestComponent = () => {
@@ -17,7 +17,7 @@ const TestComponent = () => {
       <div data-testid="user-count">{getUserCount()}</div>
       <ul data-testid="user-list">
         {getUserList().map(user => (
-          <li key={user.id}>{user.name}</li>
+          <li key={user.id}>{user.firstName} {user.lastName}</li>
         ))}
       </ul>
     </div>
@@ -30,7 +30,7 @@ describe('UserContext Integration Tests', () => {
   });
 
   it('should fetch users on initial load', async () => {
-    axios.get.mockResolvedValue({ data: mockUsers });
+    axios.get.mockResolvedValue({ data: { utilisateurs: mockUsersRaw } });
 
     const { getByTestId } = render(
       <UserProvider>
@@ -39,7 +39,7 @@ describe('UserContext Integration Tests', () => {
     );
 
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/users');
+      expect(axios.get).toHaveBeenCalledWith(`${process.env.REACT_APP_API_URL}/users`);
       expect(getByTestId('user-count').textContent).toBe('2');
       expect(getByTestId('user-list').children.length).toBe(2);
     });
@@ -56,7 +56,7 @@ describe('UserContext Integration Tests', () => {
     );
 
     await waitFor(() => {
-        expect(axios.get).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/users');
+        expect(axios.get).toHaveBeenCalledWith(`${process.env.REACT_APP_API_URL}/users`);
         expect(getByTestId('user-count').textContent).toBe('0');
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error loading users from API:', expect.any(Error));
     });
@@ -65,7 +65,7 @@ describe('UserContext Integration Tests', () => {
   });
 
   it('should add a user', async () => {
-    axios.get.mockResolvedValue({ data: [] }); // Start with no users
+    axios.get.mockResolvedValue({ data: { utilisateurs: [] } }); // Start with no users
     const newUser = { id: 3, name: 'Clementine Bauch' };
     axios.post.mockResolvedValue({ data: newUser });
 
@@ -95,15 +95,15 @@ describe('UserContext Integration Tests', () => {
     });
 
     await waitFor(() => {
-        expect(axios.post).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/users', newUser);
+        expect(axios.post).toHaveBeenCalledWith(`${process.env.REACT_APP_API_URL}/users`, newUser);
         expect(getByTestId('user-count').textContent).toBe('1');
     });
   });
 
   it('should handle error when adding a user', async () => {
-    axios.get.mockResolvedValue({ data: mockUsers });
+    axios.get.mockResolvedValue({ data: { utilisateurs: mockUsersRaw } });
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const newUser = { name: 'New User' };
+    const newUser = { firstName: 'New', lastName: 'User', email: 'new@test.com' };
     axios.post.mockRejectedValue(new Error('Failed to add user'));
 
     let addUserFunc;
@@ -128,7 +128,7 @@ describe('UserContext Integration Tests', () => {
     });
 
     await waitFor(() => {
-        expect(axios.post).toHaveBeenCalledWith('https://jsonplaceholder.typicode.com/users', newUser);
+        expect(axios.post).toHaveBeenCalledWith(`${process.env.REACT_APP_API_URL}/users`, newUser);
         expect(getByTestId('user-count').textContent).toBe('2'); // Count should not change
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error saving user to API:', expect.any(Error));
     });
@@ -141,6 +141,8 @@ describe('UserContext Integration Tests', () => {
     const wrapper = ({ children }) => <UserProvider>{children}</UserProvider>;
     
     beforeEach(() => {
+      // Mock GET to avoid unhandled undefined response when UserProvider mounts
+      axios.get.mockResolvedValue({ data: { utilisateurs: [] } });
       // Mock window.alert to avoid issues in tests
       window.alert = jest.fn();
     });
@@ -156,9 +158,11 @@ describe('UserContext Integration Tests', () => {
       const { result } = renderHook(() => useUsers(), { wrapper });
 
       const newUser = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'existing@test.com',
-        address: { city: 'Paris', zipcode: '75001-1234' }
+        city: 'Paris',
+        postalCode: '75001'
       };
 
       const response = await act(async () => {
@@ -185,9 +189,11 @@ describe('UserContext Integration Tests', () => {
       const { result } = renderHook(() => useUsers(), { wrapper });
 
       const newUser = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@test.com',
-        address: { city: 'Lyon', zipcode: '69001-5678' }
+        city: 'Lyon',
+        postalCode: '69001'
       };
 
       const response = await act(async () => {
@@ -211,9 +217,11 @@ describe('UserContext Integration Tests', () => {
       const { result } = renderHook(() => useUsers(), { wrapper });
 
       const newUser = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@test.com',
-        address: { city: 'Marseille', zipcode: '13001-9876' }
+        city: 'Marseille',
+        postalCode: '13001'
       };
 
       const response = await act(async () => {
@@ -232,9 +240,11 @@ describe('UserContext Integration Tests', () => {
     test('should handle successful user creation (200/201)', async () => {
       const mockUser = {
         id: 11,
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@test.com',
-        address: { city: 'Nice', zipcode: '06000-1111' }
+        city: 'Nice',
+        postalCode: '06000'
       };
       
       axios.post.mockResolvedValue({ data: mockUser });
@@ -242,9 +252,11 @@ describe('UserContext Integration Tests', () => {
       const { result } = renderHook(() => useUsers(), { wrapper });
 
       const newUser = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@test.com',
-        address: { city: 'Nice', zipcode: '06000-1111' }
+        city: 'Nice',
+        postalCode: '06000'
       };
 
       const response = await act(async () => {

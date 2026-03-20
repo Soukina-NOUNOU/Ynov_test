@@ -68,6 +68,22 @@
   font-size: 0.9rem;
 }
 
+.delete-btn {
+  margin-top: 0.75rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
+
 .navigation {
   text-align: center;
   margin-top: 2rem;

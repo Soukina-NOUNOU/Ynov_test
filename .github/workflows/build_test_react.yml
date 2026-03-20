@@ -37,38 +37,18 @@ jobs:
           npm run jsdoc
           cp -r docs build/
           
+          
       - name: Display deployment URLs
         run: |
-          echo " Application will be deployed to: ${{ env.GITHUB_PAGES_URL }}"
-          echo " Documentation will be available at: ${{ env.GITHUB_PAGES_URL }}/docs/"
-          echo " API Endpoint: https://jsonplaceholder.typicode.com"
-          echo " Ready for production with JSONPlaceholder API!"
-          
-          
+          echo "Application will be deployed to: ${{ env.GITHUB_PAGES_URL }}"
+          echo "Documentation will be available at: ${{ env.GITHUB_PAGES_URL }}/docs/"
+
       - name: Upload coverage reports to codecov
         uses: codecov/codecov-action@v3
         env: 
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           directory: ./my-app/coverage
-        
-      - name: Run Cypress tests (headless)
-        uses: cypress-io/github-action@v6
-        with:
-          build: npm run build
-          start: npm start
-          working-directory: my-app
-          wait-on: 'http://localhost:3000/Ynov_test'
-          wait-on-timeout: 120
-          browser: chrome
-          spec: cypress/e2e/**/*.cy.js
-
-      - name: Upload Cypress test results
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: my-app/cypress/screenshots
 
       - name: Setup Pages
         id: pages
@@ -165,6 +145,7 @@ jobs:
           echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> .env
           echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> .env
           echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> .env
 
       - name: Build and start services
         working-directory: my-app
@@ -193,6 +174,24 @@ jobs:
           fi
           echo "API validation successful: $users_count users found"
 
+      - name: Run Cypress E2E tests against real API
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: my-app
+          wait-on: 'http://localhost:3000/Ynov_test'
+          wait-on-timeout: 120
+          browser: chrome
+          spec: cypress/e2e/**/*.cy.js
+        env:
+          CYPRESS_BASE_URL: http://localhost:3000/Ynov_test
+
+      - name: Upload Cypress test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: my-app/cypress/screenshots
+
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
@@ -203,7 +202,7 @@ jobs:
           echo "Image successfully pushed to Docker Hub!"
         
   deploy:
-    needs: publish-npm
+    needs: docker-integration-test
     permissions:
       pages: write
       id-token: write
@@ -222,4 +221,4 @@ jobs:
           echo ""
           echo "Application URL: ${{ env.GITHUB_PAGES_URL }}"
           echo "Documentation URL: ${{ env.GITHUB_PAGES_URL }}/docs/"
-          echo "Powered by JSONPlaceholder API: https://jsonplaceholder.typicode.com"
+          echo "API URL: ${{ secrets.REACT_APP_API_URL }}"

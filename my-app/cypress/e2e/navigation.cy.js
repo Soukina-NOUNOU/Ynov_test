@@ -1,21 +1,21 @@
 describe('Tests E2E Navigation Multi-Pages', () => {
   beforeEach(() => {
     // Intercept API calls
-    cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+    cy.intercept('GET', "**/users", {
       statusCode: 200,
-      body: []
+      body: { utilisateurs: [] }
     }).as('getUsers');
     
-    cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+    cy.intercept('POST', "**/users", {
       statusCode: 201,
       body: {
         id: 11,
-        name: 'Marc Dupont',
+        firstName: 'Marc',
+        lastName: 'Dupont',
         email: 'marc.dupont@test.com',
-        address: {
-          city: 'Paris',
-          zipcode: '75001-1234'
-        }
+        birth: '1990-05-15',
+        city: 'Paris',
+        postalCode: '75001'
       }
     }).as('addUser');
   });
@@ -46,7 +46,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('#email').type('marc.dupont@test.com');
       cy.get('#birth').type('1990-05-15');
       cy.get('#city').type('Paris');
-      cy.get('#postalCode').type('75001-1234');
+      cy.get('#postalCode').type('75001');
       
       // Verify that there are no validation errors
       cy.get('.error').should('not.exist');
@@ -75,7 +75,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
           email: 'marc.dupont@test.com',
           address: {
             city: 'Paris',
-            zipcode: '75001-1234'
+            zipcode: '75001'
           }
         });
         
@@ -103,17 +103,9 @@ describe('Tests E2E Navigation Multi-Pages', () => {
   describe('Scenario error / Attempt invalid registration', () => {
     it('should handle invalid registration attempt and maintain existing data', () => {
       // Pre-condition: Mock API to return existing user
-      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('GET', "**/users", {
         statusCode: 200,
-        body: [{
-          id: 1,
-          name: 'Marc Dupont', 
-          email: 'marc.dupont@test.com',
-          address: {
-            city: 'Paris',
-            zipcode: '75001-1234'
-          }
-        }]
+        body: { utilisateurs: [[1, 'Marc', 'Dupont', 'marc.dupont@test.com', '1990-05-15', 'Paris', '75001']] }
       }).as('getUsersWithData');
       
       // Mock successful update for existing data (no POST should be called)
@@ -157,7 +149,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.contains('Veuillez saisir une adresse email valide (test@test.com).').should('be.visible');
       cy.contains('La date de naissance est obligatoire').should('be.visible');
       cy.contains('Le nom contient des caractères dangereux non autorisés.').should('be.visible');
-      cy.contains('Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).').should('be.visible');
+      cy.contains('Le code postal doit être composé de 5 chiffres (ex: 75001).').should('be.visible');
       
       // Verify that the submit button remains disabled
       cy.get('button[type="submit"]').should('be.disabled');
@@ -190,17 +182,9 @@ describe('Tests E2E Navigation Multi-Pages', () => {
   describe('Navigation and persistence data', () => {
     it('should maintain data consistency across page navigations', () => {
       // Setup: Mock API to return test user data
-      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('GET', "**/users", {
         statusCode: 200,
-        body: [{
-          id: 1,
-          name: 'Test Persistance', 
-          email: 'test.persistance@example.com',
-          address: {
-            city: 'Lyon',
-            zipcode: '69000-5678'
-          }
-        }]
+        body: { utilisateurs: [[1, 'Test', 'Persistance', 'test.persistance@example.com', '1990-01-01', 'Lyon', '69000']] }
       }).as('getUsersPersistence');
       
       // Multiple navigation: Home => Form => Home => Form => Home
@@ -231,15 +215,15 @@ describe('Tests E2E Navigation Multi-Pages', () => {
   describe('HTTP Error Scenarios', () => {
     beforeEach(() => {
       // Mock successful GET for initial load
-      cy.intercept('GET', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('GET', "**/users", {
         statusCode: 200,
-        body: []
+        body: { utilisateurs: [] }
       }).as('getUsers');
     });
 
     it('should handle 400 error - Email already exists', () => {
       // Mock POST to return 400 error
-      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('POST', "**/users", {
         statusCode: 400,
         body: {
           message: 'Email already exists'
@@ -258,7 +242,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('#email').type('existing@test.com'); // Email that "already exists"
       cy.get('#birth').type('1990-01-01');
       cy.get('#city').type('Paris');
-      cy.get('#postalCode').type('75001-1234');
+      cy.get('#postalCode').type('75001');
       
       // Submit form
       cy.get('button[type="submit"]').click();
@@ -282,7 +266,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
 
     it('should handle 500 error - Server down', () => {
       // Mock POST to return 500 error
-      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('POST', "**/users", {
         statusCode: 500,
         body: {
           message: 'Internal Server Error'
@@ -301,7 +285,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('#email').type('server.error@test.com');
       cy.get('#birth').type('1985-05-15');
       cy.get('#city').type('Lyon');
-      cy.get('#postalCode').type('69001-5678');
+      cy.get('#postalCode').type('69001');
       
       // Submit form
       cy.get('button[type="submit"]').click();
@@ -325,7 +309,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
 
     it('should handle network error', () => {
       // Mock POST to simulate network error (no response)
-      cy.intercept('POST', 'https://jsonplaceholder.typicode.com/users', {
+      cy.intercept('POST', "**/users", {
         forceNetworkError: true
       }).as('addUserNetworkError');
 
@@ -341,7 +325,7 @@ describe('Tests E2E Navigation Multi-Pages', () => {
       cy.get('#email').type('network@test.com');
       cy.get('#birth').type('1992-03-10');
       cy.get('#city').type('Marseille');
-      cy.get('#postalCode').type('13001-9876');
+      cy.get('#postalCode').type('13001');
       
       // Submit form
       cy.get('button[type="submit"]').click();

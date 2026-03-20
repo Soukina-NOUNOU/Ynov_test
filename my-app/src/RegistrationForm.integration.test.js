@@ -17,7 +17,7 @@ describe("RegistrationForm / complete integration", () => {
     await userEvent.type(screen.getByLabelText("Email"), "jone@test.com");
     await userEvent.type(screen.getByLabelText("Date de naissance"), "1990-08-19");
     await userEvent.type(screen.getByLabelText("Ville"), "Nîmes");
-    await userEvent.type(screen.getByLabelText("Code postal"), "30000-1234");
+    await userEvent.type(screen.getByLabelText("Code postal"), "30000");
   };
 
 
@@ -43,7 +43,7 @@ describe("RegistrationForm / complete integration", () => {
     await userEvent.tab();
 
     expect(
-      screen.getByText("Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).")
+      screen.getByText("Le code postal doit être composé de 5 chiffres (ex: 75001).")
     ).toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "jone@test.com" } });
     fireEvent.change(screen.getByLabelText("Date de naissance"), { target: { name: "birth", value: "1990-08-19" } });
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "Nîmes" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -102,7 +102,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "jone@test.com" } });
     fireEvent.change(screen.getByLabelText("Date de naissance"), { target: { name: "birth", value: "1990-08-19" } });
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "Nîmes" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -126,13 +126,13 @@ describe("RegistrationForm / complete integration", () => {
         email: "jone@test.com",
         address: {
           city: "Nîmes",
-          zipcode: "30000-1234"
+          zipcode: "30000"
         },
         firstName: "Jone",
         lastName: "Doe",
         birth: "1990-08-19",
         city: "Nîmes",
-        postalCode: "30000-1234"
+        postalCode: "30000"
       },
       metadata: expect.objectContaining({
         hasAutoSavedData: expect.any(Boolean),
@@ -152,7 +152,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "nullnull" } });
     fireEvent.change(screen.getByLabelText("Date de naissance"), { target: { name: "birth", value: "1990-08-19" } });
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "Nîmes" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -168,7 +168,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "jone@test.com" } });
     // Do not fill in the birthdate
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "Nîmes" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -184,7 +184,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "jone@test.com" } });
     fireEvent.change(screen.getByLabelText("Date de naissance"), { target: { name: "birth", value: "2050-10-10" } });
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "Nîmes" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -204,7 +204,7 @@ describe("RegistrationForm / complete integration", () => {
 
     fireEvent.submit(form);
 
-    expect(localStorage.getItem("error_postalCode")).toBe("Le code postal doit être composé de 5 chiffres, un tiret, puis 4 chiffres (ex: 12345-6789).");
+    expect(localStorage.getItem("error_postalCode")).toBe("Le code postal doit être composé de 5 chiffres (ex: 75001).");
   });
 
   test("Should save errors to localStorage when submitting with invalid city", async () => {
@@ -216,7 +216,7 @@ describe("RegistrationForm / complete integration", () => {
     fireEvent.change(screen.getByLabelText("Email"), { target: { name: "email", value: "jone@test.com" } });
     fireEvent.change(screen.getByLabelText("Date de naissance"), { target: { name: "birth", value: "1990-08-19" } });
     fireEvent.change(screen.getByLabelText("Ville"), { target: { name: "city", value: "789" } });
-    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000-1234" } });
+    fireEvent.change(screen.getByLabelText("Code postal"), { target: { name: "postalCode", value: "30000" } });
 
     fireEvent.submit(form);
 
@@ -288,13 +288,13 @@ describe("RegistrationForm / complete integration", () => {
         email: "jone@test.com",
         address: {
           city: "Nîmes",
-          zipcode: "30000-1234"
+          zipcode: "30000"
         },
         firstName: "Jone",
         lastName: "Doe",
         birth: "1990-08-19",
         city: "Nîmes",
-        postalCode: "30000-1234"
+        postalCode: "30000"
       },
       metadata: expect.objectContaining({
         hasAutoSavedData: expect.any(Boolean),

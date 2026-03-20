@@ -18,8 +18,17 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-        setUsers(response.data);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`);
+        const mapped = (response.data.utilisateurs || []).map(user => ({
+          id: user[0],
+          firstName: user[1],
+          lastName: user[2],
+          email: user[3],
+          birth: user[4],
+          city: user[5],
+          postalCode: user[6],
+        }));
+        setUsers(mapped);
       } catch (error) {
         console.error('Error loading users from API:', error);
         setUsers([]);
@@ -32,7 +41,7 @@ export const UserProvider = ({ children }) => {
   // Function to add a new user
   const addUser = async (newUser) => {
     try {
-      const response = await axios.post('https://jsonplaceholder.typicode.com/users', newUser);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/users`, newUser);
       const updatedUsers = [...users, response.data];
       setUsers(updatedUsers);
       return { success: true, data: response.data };
@@ -79,9 +88,26 @@ export const UserProvider = ({ children }) => {
   // Function to get the list of users
   const getUserList = () => users;
 
+  // Function to delete a user
+  const deleteUser = async (userId) => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/users/${userId}`);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      const errorMsg = error.response?.status === 404
+        ? 'Utilisateur introuvable.'
+        : 'Impossible de supprimer cet utilisateur.';
+      alert(errorMsg);
+      return { success: false, error: errorMsg };
+    }
+  };
+
   const value = {
     users,
     addUser,
+    deleteUser,
     getUserCount,
     getUserList
   };

@@ -5,7 +5,7 @@ import { formatUserCountText, sortUsersByName } from '../utils/userUtils';
 import './HomePage.css';
 
 const HomePage = () => {
-  const { getUserCount, getUserList } = useUsers();
+  const { getUserCount, getUserList, deleteUser } = useUsers();
   const userCount = getUserCount();
   const userList = getUserList();
   
@@ -29,9 +29,15 @@ const HomePage = () => {
           <div className="user-cards">
             {sortedUsers.map((user, index) => (
               <div key={index} className="user-card">
-                <h4>{user.name}</h4>
+                <h4>{user.firstName} {user.lastName}</h4>
                 <p>Email: {user.email}</p>
-                <p>Ville: {user.address?.city}</p>
+                <p>Ville: {user.city}</p>
+                <button
+                  onClick={() => deleteUser(user.id)}
+                  className="delete-btn"
+                >
+                  Supprimer
+                </button>
               </div>
             ))}
           </div>
