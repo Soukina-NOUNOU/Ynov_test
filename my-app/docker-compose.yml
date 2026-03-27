@@ -34,8 +34,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      # Socket check: verifies uvicorn is listening on port 8000 without triggering a MySQL query
-      test: ["CMD-SHELL", "python -c \"import socket; socket.create_connection(('localhost', 8000), timeout=3)\""]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/users || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

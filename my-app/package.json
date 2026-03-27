@@ -34,9 +34,9 @@
     "jsdoc": "jsdoc -c jsdoc.config.json -r -d ./docs",
     "build-npm-ci": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src --out-dir dist --copy-files",
     "cypress": "cypress open",
-    "cy:mocked": "cypress run --expose grepTags=@mocked,grepFilterSpecs=true",
-    "cy:real": "cypress run --expose grepTags=@real,grepFilterSpecs=true",
-    "cy:api-down": "cypress run --expose grepTags=@api-down,grepFilterSpecs=true"
+    "cy:mocked": "cypress run --expose grepTags=@mocked,grepFilterSpecs=true,grepOmitFiltered=true",
+    "cy:real": "cypress run --expose grepTags=@real,grepFilterSpecs=true,grepOmitFiltered=true",
+    "cy:api-down": "cypress run --expose grepTags=@api-down,grepFilterSpecs=true,grepOmitFiltered=true"
   },
   "eslintConfig": {
     "extends": [
