@@ -1,4 +1,4 @@
-describe('Tests E2E Navigation Multi-Pages', () => {
+describe('Tests E2E Navigation Multi-Pages', { tags: '@mocked' }, () => {
   beforeEach(() => {
     // Intercept API calls
     cy.intercept('GET', "**/users", {
