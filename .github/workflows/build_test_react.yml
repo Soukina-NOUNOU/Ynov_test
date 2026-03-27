@@ -167,7 +167,10 @@ jobs:
       - name: Test API Endpoint
         working-directory: my-app
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/users)
+          # -sS: silent but still prints network errors, -o /dev/null: discard the response body
+          # (i only need the HTTP status code here, not the JSON content)
+          # -w "%{http_code}": print the HTTP status code so i can assert it equals 200
+          response=$(curl -sS -o /dev/null -w "%{http_code}" http://localhost:8000/users)
           if [ "$response" != "200" ]; then
             echo "API test failed with status code: $response"
             docker compose logs api
