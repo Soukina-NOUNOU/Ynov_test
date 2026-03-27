@@ -178,16 +178,21 @@ jobs:
         working-directory: my-app
         run: sudo chown -R $(whoami) node_modules
 
-      - name: Run Cypress E2E tests against real API
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: my-app
-          wait-on: 'http://localhost:3000/Ynov_test'
-          wait-on-timeout: 120
-          browser: chrome
-          spec: cypress/e2e/**/*.cy.js
-        env:
-          CYPRESS_BASE_URL: http://localhost:3000/Ynov_test
+      - name: Run Cypress E2E tests - mocked scenarios (no real API needed)
+        working-directory: my-app
+        run: npm run cy:mocked
+
+      - name: Run Cypress E2E tests - real stack (full docker compose up)
+        working-directory: my-app
+        run: npm run cy:real
+
+      - name: Stop API container to simulate API-down scenario
+        working-directory: my-app
+        run: docker compose stop api
+
+      - name: Run Cypress E2E tests - API container stopped
+        working-directory: my-app
+        run: npm run cy:api-down
 
       - name: Upload Cypress test results
         uses: actions/upload-artifact@v4
