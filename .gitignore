@@ -1,2 +1,12 @@
 /node_modules
 /coverage
+infra/registry/terraform.tfstate
+infra/registry/terraform.tfstate.backup
+
+infra/registry/.terraform/
+
+infra/registry/*.pem
+infra/registry/*.crt
+infra/registry/*.key
+
+infra/registry/inventory.ini
