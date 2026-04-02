@@ -23,3 +23,16 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+registry/terraform.tfstate
+registry/terraform.tfstate.backup
+
+registry/.terraform/
+
+registry/*.pem
+registry/*.crt
+registry/*.key
+
+registry/inventory.ini
+
+secrets/
