@@ -10,3 +10,16 @@ infra/registry/*.crt
 infra/registry/*.key
 
 infra/registry/inventory.ini
+
+# Deploy Terraform
+infra/deploy/terraform.tfstate
+infra/deploy/terraform.tfstate.backup
+infra/deploy/.terraform/
+infra/deploy/*.pem
+
+# Ansible
+ansible_inventory.ini
+*.pem
+registry.crt
+inventory.ini
+key.pem
