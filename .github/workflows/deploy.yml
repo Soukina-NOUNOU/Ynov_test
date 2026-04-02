@@ -1,0 +1,125 @@
+name: Deploy Application (Zero Touch)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+   
+      - name: Checkout du code source
+        uses: actions/checkout@v4
+
+     
+      # 1. BUILD & PUSH DES IMAGES DOCKER
+     
+      - name: Login au registre Docker privé
+        run: |
+          mkdir -p ~/.docker/certs.d/${{ secrets.REGISTRY_URL }}
+          echo "${{ secrets.REGISTRY_CERT }}" > ~/.docker/certs.d/${{ secrets.REGISTRY_URL }}/ca.crt
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} -u admin --password-stdin
+
+      - name: Build et push de l'image API
+        working-directory: my-app
+        run: |
+          docker build -f python.Dockerfile -t ${{ secrets.REGISTRY_URL }}/api:latest .
+          docker push ${{ secrets.REGISTRY_URL }}/api:latest
+
+      - name: Build et push de l'image React
+        working-directory: my-app
+        run: |
+          docker build -f react.Dockerfile \
+            --build-arg REACT_APP_API_URL=http://${{ secrets.REGISTRY_URL }}:8000 \
+            -t ${{ secrets.REGISTRY_URL }}/react:latest .
+          docker push ${{ secrets.REGISTRY_URL }}/react:latest
+
+      - name: Build et push de l'image Migration DB
+        working-directory: my-app
+        run: |
+          docker build -f migration.Dockerfile -t ${{ secrets.REGISTRY_URL }}/migration:latest .
+          docker push ${{ secrets.REGISTRY_URL }}/migration:latest
+
+    
+      # 2. TERRAFORM Provisioning de l'infrastructure
+
+      - name: Installation de Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: infra/deploy
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform Apply
+        working-directory: infra/deploy
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 3. BRIDGE Récupération des secrets Terraform
+   
+      - name: Récupérer l'IP et la clé SSH depuis Terraform
+        working-directory: infra/deploy
+        run: |
+          echo "SERVER_IP=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
+          terraform output -raw private_key_pem > ../../key.pem
+          chmod 600 ../../key.pem
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Générer l'inventaire Ansible dynamique
+        run: |
+          echo "[app_servers]" > inventory.ini
+          echo "${{ env.SERVER_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+          cat inventory.ini
+
+      - name: Attendre que le serveur SSH soit prêt
+        run: |
+          echo "Attente du serveur SSH sur ${{ env.SERVER_IP }}..."
+          for i in $(seq 1 30); do
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i key.pem ubuntu@${{ env.SERVER_IP }} "echo OK" 2>/dev/null; then
+              echo "Serveur SSH prêt !"
+              exit 0
+            fi
+            echo "Tentative $i/30..."
+            sleep 10
+          done
+          echo "Timeout: le serveur SSH n'est pas accessible"
+          exit 1
+
+    
+      # 4. ANSIBLE Configuration & Déploiement
+   
+      - name: Installer Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Préparer le certificat du registre pour Ansible
+        run: |
+          echo "${{ secrets.REGISTRY_CERT }}" > ansible/registry.crt
+
+      - name: Exécuter le playbook Ansible
+        run: |
+          ansible-playbook -i inventory.ini ansible/deploy.yml \
+            --extra-vars "registry_url=${{ secrets.REGISTRY_URL }} registry_user=admin registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
+
+   
+      # 5. RÉSULTAT URL de l'application
+     
+      - name: Afficher l'URL de l'application
+        run: |
+          echo "============================================"
+          echo "  DÉPLOIEMENT TERMINÉ AVEC SUCCÈS !"
+          echo "============================================"
+          echo "Frontend : http://${{ env.SERVER_IP }}:3000"
+          echo "API      : http://${{ env.SERVER_IP }}:8000"
+          echo "============================================"
