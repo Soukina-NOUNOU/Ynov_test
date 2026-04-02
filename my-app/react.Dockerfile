@@ -1,12 +1,15 @@
+# Stage 1 : Build React
 FROM node:20-alpine AS builder
-
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --silent
+COPY . .
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+RUN npm run build
 
-ENV PATH /app/node_modules/.bin:$PATH
-
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm install --silent
-RUN npm install react-scripts@5.0.1 -g --silent
-
-EXPOSE 3000
+# Stage 2 : Servir avec nginx
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
