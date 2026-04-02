@@ -61,11 +61,13 @@ terraform apply -auto-approve
 
 ------------------------------------------------------------------------
 
-## 📦 Étape 2 -- Génération inventaire Ansible
+## 📦 Étape 2 -- Génération inventaire Ansible à la racine du projet 
+
 
 ``` bash
 cd ..
-./generate_ansible_inventory.sh
+Ynov_test
+./infra/registry/generate_ansible_inventory.sh
 ```
 
 ### ✅ Vérifications
@@ -75,7 +77,7 @@ cd ..
 
 ------------------------------------------------------------------------
 
-## 🛠️ Étape 3 -- Ansible (Phase 2)
+## 🛠️ Étape 3 -- Ansible (Phase 2) à la racine du projet 
 
 ``` bash
 ansible-playbook -i ansible_inventory.ini infra/registry/playbook.yml \
