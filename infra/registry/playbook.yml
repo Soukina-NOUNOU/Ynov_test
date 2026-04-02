@@ -75,11 +75,11 @@
         - "{{ project_dir }}/certs/registry.crt"
 
     # 4. Génération du fichier de mots de passe
-    - name: Génération mot de passe (admin/admin123)
+    - name: Génération du mot de passe pour l'utilisateur admin du registre
       htpasswd:
         path: "{{ project_dir }}/auth/registry.password"
         name: admin
-        password: admin123
+        password: "{{ registry_admin_password }}"
         owner: ubuntu
         group: ubuntu
         mode: 0640
