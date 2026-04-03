@@ -120,7 +120,7 @@ jobs:
       - name: Exécuter le playbook Ansible du registre
         run: |
           ansible-playbook -i registry-inventory.ini infra/registry/playbook.yml \
-            --extra-vars "registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
+            --extra-vars "registry_user=${{ env.REGISTRY_USER }} registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
  
       # 4. TERRAFORM APP Créer le serveur applicatif
   
