@@ -118,9 +118,12 @@ jobs:
           exit 1
 
       - name: Exécuter le playbook Ansible du registre
+        env:
+          SECRET_REG_USER: ${{ secrets.REGISTRY_USER }}
+          SECRET_REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
           ansible-playbook -i registry-inventory.ini infra/registry/playbook.yml \
-            --extra-vars "registry_user=${{ secrets.REGISTRY_USER }} registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
+            --extra-vars "registry_user=$SECRET_REG_USER registry_admin_password=$SECRET_REG_PASS"
  
       - name: Vérifier et récupérer le certificat du registre
         run: |
@@ -163,11 +166,14 @@ jobs:
       # 6. BUILD & PUSH Images Docker vers le registre privé
 
       - name: Configurer le certificat du registre et login Docker
+        env:
+          SECRET_REG_USER: ${{ secrets.REGISTRY_USER }}
+          SECRET_REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
           sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
           sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
           sudo systemctl restart docker
-          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u ${{ secrets.REGISTRY_USER }} --password-stdin
+          echo "$SECRET_REG_PASS" | docker login ${{ env.REGISTRY_IP }} -u "$SECRET_REG_USER" --password-stdin
 
       - name: Build et push de l'image API
         working-directory: my-app
@@ -209,9 +215,14 @@ jobs:
         run: cp registry.crt ansible/registry.crt
 
       - name: Exécuter le playbook Ansible de l'app
+        env:
+          SECRET_REG_USER: ${{ secrets.REGISTRY_USER }}
+          SECRET_REG_PASS: ${{ secrets.REGISTRY_PASSWORD }}
+          SECRET_DB_ROOT_PASS: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          SECRET_DB_NAME: ${{ secrets.MYSQL_DATABASE }}
         run: |
           ansible-playbook -i inventory.ini ansible/deploy.yml \
-            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=${{ secrets.REGISTRY_USER }} registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
+            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=$SECRET_REG_USER registry_password=$SECRET_REG_PASS mysql_root_password=$SECRET_DB_ROOT_PASS mysql_database=$SECRET_DB_NAME"
 
       # 8. VALIDATION POST-DÉPLOIEMENT
   
