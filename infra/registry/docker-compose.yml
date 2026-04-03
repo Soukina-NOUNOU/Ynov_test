@@ -21,7 +21,7 @@ services:
     # Pas de ports exposés : accès uniquement via nginx
     environment:
       - REGISTRY_TITLE=Ansible Deployed Registry
-      - REGISTRY_URL=https://13.37.240.71
+      - REGISTRY_URL=https://{{ public_ip }}
       - REGISTRY_SECURED=true
       - SINGLE_REGISTRY=true
       - DELETE_IMAGES=true
