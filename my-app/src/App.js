@@ -8,7 +8,7 @@ import "./App.css";
 function App() {
   return (
     <UserProvider>
-      <Router basename="/Ynov_test">
+      <Router basename={process.env.PUBLIC_URL || "/"}>
         <div className="App">
           <Routes>
             <Route path="/" element={<HomePage />} />
