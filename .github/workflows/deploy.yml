@@ -1,9 +1,7 @@
 name: Deploy Application (Zero Touch)
-#test
+
 on:
   workflow_dispatch:
-  push:
-    branches: [ main, pierrev2 ] 
 
 jobs:
   deploy:

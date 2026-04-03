@@ -67,7 +67,7 @@ terraform apply -auto-approve
 ``` bash
 cd ..
 Ynov_test
-./infra/registry/generate_ansible_inventory.sh
+./infra/registry/bridge-registry.sh
 ```
 
 ### ✅ Vérifications
