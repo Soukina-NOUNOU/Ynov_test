@@ -23,6 +23,43 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
+
+      # ============================================
+      # 0.1 NETTOYAGE — Détruire les anciennes instances
+      # ============================================
+      - name: Nettoyer les anciennes instances (Registry + App)
+        run: |
+          echo "Recherche des anciennes instances..."
+          # Terminer les instances du registre
+          REGISTRY_IDS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Terraform-Registry-Server" "Name=instance-state-name,Values=running" \
+            --query "Reservations[*].Instances[*].InstanceId" --output text)
+          if [ -n "$REGISTRY_IDS" ]; then
+            echo "Destruction des anciennes instances registre: $REGISTRY_IDS"
+            aws ec2 terminate-instances --instance-ids $REGISTRY_IDS
+            aws ec2 wait instance-terminated --instance-ids $REGISTRY_IDS
+          fi
+          # Terminer les instances de l'app
+          APP_IDS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=ynov-app-server" "Name=instance-state-name,Values=running" \
+            --query "Reservations[*].Instances[*].InstanceId" --output text)
+          if [ -n "$APP_IDS" ]; then
+            echo "Destruction des anciennes instances app: $APP_IDS"
+            aws ec2 terminate-instances --instance-ids $APP_IDS
+            aws ec2 wait instance-terminated --instance-ids $APP_IDS
+          fi
+          # Supprimer les anciennes key pairs
+          aws ec2 delete-key-pair --key-name registry_key_terraform 2>/dev/null || true
+          aws ec2 delete-key-pair --key-name app_key_terraform 2>/dev/null || true
+          # Supprimer les anciens security groups
+          aws ec2 delete-security-group --group-name registry-sg-simple-ClickOpster 2>/dev/null || true
+          aws ec2 delete-security-group --group-name app-sg 2>/dev/null || true
+          echo "Nettoyage terminé."
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-3
+
       # 1. TERRAFORM REGISTRE Créer l'infra du registre Docker
       - name: Terraform Init (Registre)
         working-directory: infra/registry
