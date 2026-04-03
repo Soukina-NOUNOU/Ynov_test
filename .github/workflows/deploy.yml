@@ -31,34 +31,41 @@ jobs:
         run: |
           echo "=== Recherche des anciennes instances ==="
           
-          # Chercher TOUTES les instances (running, pending, stopping, stopped)
+          # Chercher TOUTES les instances (tous les états sauf terminated)
           ALL_IDS=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=Terraform-Registry-Server,ynov-app-server" \
-                      "Name=instance-state-name,Values=running,pending,stopping,stopped" \
-            --query "Reservations[*].Instances[*].InstanceId" --output text)
+            --query "Reservations[*].Instances[?State.Name!='terminated'].InstanceId" --output text)
           
           if [ -n "$ALL_IDS" ]; then
             echo "Destruction des instances: $ALL_IDS"
             aws ec2 terminate-instances --instance-ids $ALL_IDS
             echo "Attente de la terminaison complète..."
             aws ec2 wait instance-terminated --instance-ids $ALL_IDS
-            echo "Instances terminées. Attente libération des security groups..."
-            sleep 20
+            echo "Instances terminées."
           else
             echo "Aucune instance trouvée."
           fi
 
+          # Attendre que les ENIs soient libérées
+          echo "Attente de la libération des ressources réseau (30s)..."
+          sleep 30
+
           # Supprimer les anciennes key pairs
-          aws ec2 delete-key-pair --key-name registry_key_terraform 2>/dev/null || true
-          aws ec2 delete-key-pair --key-name app_key_terraform 2>/dev/null || true
+          echo "Suppression des key pairs..."
+          aws ec2 delete-key-pair --key-name registry_key_terraform && echo "Key pair registry supprimée" || echo "Key pair registry absente ou déjà supprimée"
+          aws ec2 delete-key-pair --key-name app_key_terraform && echo "Key pair app supprimée" || echo "Key pair app absente ou déjà supprimée"
           
           # Supprimer les security groups (avec retry car le détachement prend du temps)
-          for attempt in 1 2 3; do
-            echo "Tentative $attempt de suppression des security groups..."
-            aws ec2 delete-security-group --group-name registry-sg-simple-ClickOpster 2>/dev/null && echo "SG registre supprimé" && break || sleep 15
-          done
-          for attempt in 1 2 3; do
-            aws ec2 delete-security-group --group-name app-sg 2>/dev/null && echo "SG app supprimé" && break || sleep 15
+          for sg_name in registry-sg-simple-ClickOpster app-sg; do
+            for attempt in 1 2 3 4 5; do
+              echo "Tentative $attempt/5 de suppression du SG $sg_name..."
+              if aws ec2 delete-security-group --group-name "$sg_name" 2>&1; then
+                echo "SG $sg_name supprimé !"
+                break
+              fi
+              echo "SG $sg_name pas encore supprimable, attente 15s..."
+              sleep 15
+            done
           done
           
           echo "=== Nettoyage terminé ==="
