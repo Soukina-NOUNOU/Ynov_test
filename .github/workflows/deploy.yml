@@ -163,6 +163,8 @@ jobs:
       # 6. BUILD & PUSH Images Docker vers le registre privé
 
       - name: Configurer le certificat du registre et login Docker
+        env:
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
         run: |
           sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
           sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
