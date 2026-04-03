@@ -110,3 +110,8 @@ output "private_key_path" {
   description = "Path to the generated SSH private key file."
   sensitive = true 
 }
+
+output "private_key_pem" {
+  value     = tls_private_key.pk.private_key_pem
+  sensitive = true
+}
