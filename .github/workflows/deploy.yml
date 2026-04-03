@@ -108,7 +108,7 @@ jobs:
       - name: Build et push de l'image React
         working-directory: my-app
         run: |
-          docker build -f react.Dockerfile \
+          docker build -f react.prod.Dockerfile \
             --build-arg REACT_APP_API_URL=http://${{ env.SERVER_IP }}:8000 \
             -t ${{ env.REGISTRY_IP }}/react:latest .
           docker push ${{ env.REGISTRY_IP }}/react:latest
