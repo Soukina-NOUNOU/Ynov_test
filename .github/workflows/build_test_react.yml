@@ -2,7 +2,7 @@ name: Build and Test React Application
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, pierrev2 ] 
   pull_request:
     branches: [ main ]
 
