@@ -104,7 +104,7 @@ jobs:
       - name: Attendre que le serveur registre SSH soit prêt
         run: |
           for i in $(seq 1 30); do
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i registry-key.pem ubuntu@${{ env.REGISTRY_IP }} "echo OK" 2>/dev/null; then
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i registry-key.pem ubuntu@$REGISTRY_IP "echo OK" 2>/dev/null; then
               echo "Serveur registre SSH prêt !"
               exit 0
             fi
@@ -127,7 +127,7 @@ jobs:
           if [ ! -f "registry.crt" ]; then
             echo "Certificat non trouvé à la racine, récupération via SCP..."
             scp -o StrictHostKeyChecking=no -i registry-key.pem \
-              ubuntu@${{ env.REGISTRY_IP }}:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
+              ubuntu@$REGISTRY_IP:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
           fi
           ls -la registry.crt
           echo "Certificat récupéré avec succès !"
@@ -152,35 +152,35 @@ jobs:
 
       - name: Configurer le certificat du registre et login Docker
         run: |
-          sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
-          sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
+          sudo mkdir -p /etc/docker/certs.d/$REGISTRY_IP
+          sudo cp registry.crt /etc/docker/certs.d/$REGISTRY_IP/ca.crt
           sudo systemctl restart docker
-          echo "$SECRET_REG_PASS" | docker login ${{ env.REGISTRY_IP }} -u "$SECRET_REG_USER" --password-stdin
+          echo "$SECRET_REG_PASS" | docker login $REGISTRY_IP -u "$SECRET_REG_USER" --password-stdin
 
       - name: Build et push de l'image API
         working-directory: my-app
         run: |
-          docker build -f python.Dockerfile -t ${{ env.REGISTRY_IP }}/api:latest .
-          docker push ${{ env.REGISTRY_IP }}/api:latest
+          docker build -f python.Dockerfile -t $REGISTRY_IP/api:latest .
+          docker push $REGISTRY_IP/api:latest
 
       - name: Build et push de l'image React
         working-directory: my-app
         run: |
           docker build -f react.prod.Dockerfile \
-            --build-arg REACT_APP_API_URL=http://${{ env.SERVER_IP }}:8000 \
-            -t ${{ env.REGISTRY_IP }}/react:latest .
-          docker push ${{ env.REGISTRY_IP }}/react:latest
+            --build-arg REACT_APP_API_URL=http://$SERVER_IP:8000 \
+            -t $REGISTRY_IP/react:latest .
+          docker push $REGISTRY_IP/react:latest
 
       - name: Build et push de l'image Migration DB
         working-directory: my-app
         run: |
-          docker build -f migration.Dockerfile -t ${{ env.REGISTRY_IP }}/migration:latest .
-          docker push ${{ env.REGISTRY_IP }}/migration:latest
+          docker build -f migration.Dockerfile -t $REGISTRY_IP/migration:latest .
+          docker push $REGISTRY_IP/migration:latest
 
       - name: Attendre que le serveur app SSH soit prêt
         run: |
           for i in $(seq 1 30); do
-            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i app-key.pem ubuntu@${{ env.SERVER_IP }} "echo OK" 2>/dev/null; then
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i app-key.pem ubuntu@$SERVER_IP "echo OK" 2>/dev/null; then
               echo "Serveur app SSH prêt !"
               exit 0
             fi
@@ -199,7 +199,7 @@ jobs:
       - name: Exécuter le playbook Ansible de l'app
         run: |
           ansible-playbook -i inventory.ini ansible/deploy.yml \
-            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=$SECRET_REG_USER registry_password=$SECRET_REG_PASS mysql_root_password=$SECRET_DB_ROOT_PASS mysql_database=$SECRET_DB_NAME"
+            --extra-vars "registry_url=$REGISTRY_IP registry_user=$SECRET_REG_USER registry_password=$SECRET_REG_PASS mysql_root_password=$SECRET_DB_ROOT_PASS mysql_database=$SECRET_DB_NAME"
 
       # 8. VALIDATION POST-DÉPLOIEMENT
   
@@ -208,19 +208,19 @@ jobs:
 
       - name: Vérifier que le Frontend répond
         run: |
-          curl -f --retry 5 --retry-delay 10 http://${{ env.SERVER_IP }}:3000 || exit 1
+          curl -f --retry 5 --retry-delay 10 http://$SERVER_IP:3000 || exit 1
           echo "Frontend OK !"
 
       - name: Vérifier que l'API répond
         run: |
-          curl -f --retry 5 --retry-delay 10 http://${{ env.SERVER_IP }}:8000/users || exit 1
+          curl -f --retry 5 --retry-delay 10 http://$SERVER_IP:8000/users || exit 1
           echo "API OK !"
 
       # 9. RÉSULTAT URLs de l'application
   
       - name: Afficher les URLs de l'application
         run: |
-          echo "Frontend : http://${{ env.SERVER_IP }}:3000"
-          echo "API      : http://${{ env.SERVER_IP }}:8000"
-          echo "Adminer  : http://${{ env.SERVER_IP }}:8080"
-          echo "Registre : https://${{ env.REGISTRY_IP }}"
+          echo "Frontend : http://$SERVER_IP:3000"
+          echo "API/docs : http://$SERVER_IP:8000/docs"
+          echo "Adminer  : http://$SERVER_IP:8080"
+          echo "Registre : https://$REGISTRY_IP"
