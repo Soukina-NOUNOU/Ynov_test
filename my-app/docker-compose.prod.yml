@@ -5,11 +5,11 @@ services:
     image: mysql:9.6
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - DB_NAME=${MYSQL_DATABASE}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
       - ./sqlfiles/:/docker-entrypoint-initdb.d/
     healthcheck:
-      test: ["CMD-SHELL", "mysql --user=root --password=$$MYSQL_ROOT_PASSWORD $$DB_NAME --execute \"SELECT 1 FROM utilisateur LIMIT 0;\""]
+      test: ["CMD-SHELL", "mysql --user=root --password=$$MYSQL_ROOT_PASSWORD $$MYSQL_DATABASE --execute \"SELECT 1 FROM utilisateur LIMIT 0;\""]
       interval: 10s
       timeout: 5s
       retries: 5
