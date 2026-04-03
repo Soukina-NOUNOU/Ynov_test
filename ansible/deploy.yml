@@ -1,0 +1,115 @@
+---
+- name: Déploiement de l'application Ynov-Connect
+  hosts: app_servers
+  become: true
+  vars:
+    app_dir: "/home/ubuntu/app"
+  tasks:
+    # 1. Installation Docker
+    - name: Mise à jour du cache APT
+      apt:
+        update_cache: yes
+
+    - name: Installation de Docker et Docker Compose
+      apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+          - ca-certificates
+        state: present
+
+    - name: Ajout de ubuntu au groupe docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Reset de la connexion SSH
+      meta: reset_connection
+
+    # 2. Certificat auto-signé du registre
+    - name: Créer le dossier de certificats Docker pour le registre
+      file:
+        path: "/etc/docker/certs.d/{{ registry_url }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copier le certificat du registre
+      copy:
+        src: registry.crt
+        dest: "/etc/docker/certs.d/{{ registry_url }}/ca.crt"
+        mode: '0644'
+
+    # 3. Login au registre privé
+    - name: Connexion au registre Docker privé
+      command: docker login {{ registry_url }} -u {{ registry_user }} -p {{ registry_password }}
+      become_user: ubuntu
+
+    # 4. Dossier de l'application
+    - name: Créer le dossier de l'application
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Créer le dossier sqlfiles
+      file:
+        path: "{{ app_dir }}/sqlfiles"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    # 5. Copier les fichiers de l'application
+    - name: Copier docker-compose.prod.yml
+      copy:
+        src: ../my-app/docker-compose.prod.yml
+        dest: "{{ app_dir }}/docker-compose.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Copier les fichiers de migration SQL
+      copy:
+        src: "{{ item }}"
+        dest: "{{ app_dir }}/sqlfiles/"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      with_fileglob:
+        - ../my-app/sqlfiles/*.sql
+
+    # 6. Créer le fichier .env de production
+    - name: Créer le fichier .env
+      copy:
+        content: |
+          REGISTRY_URL={{ registry_url }}
+          MYSQL_ROOT_PASSWORD={{ mysql_root_password }}
+          MYSQL_DATABASE={{ mysql_database }}
+          MYSQL_USER=root
+        dest: "{{ app_dir }}/.env"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    # 7. Déployer la stack
+    - name: Arrêt de l'ancienne stack si elle existe
+      command: docker compose down
+      args:
+        chdir: "{{ app_dir }}"
+      become_user: ubuntu
+      ignore_errors: true
+
+    - name: Pull des images depuis le registre privé
+      command: docker compose pull
+      args:
+        chdir: "{{ app_dir }}"
+      become_user: ubuntu
+
+    - name: Démarrage de la stack applicative
+      command: docker compose up -d
+      args:
+        chdir: "{{ app_dir }}"
+      become_user: ubuntu
