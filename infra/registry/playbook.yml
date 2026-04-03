@@ -78,7 +78,7 @@
     - name: Génération du mot de passe pour l'utilisateur admin du registre
       htpasswd:
         path: "{{ project_dir }}/auth/registry.password"
-        name: admin
+        name: "{{ registry_user }}"
         password: "{{ registry_admin_password }}"
         owner: ubuntu
         group: ubuntu

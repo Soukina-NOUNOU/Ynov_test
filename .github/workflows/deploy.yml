@@ -121,20 +121,6 @@ jobs:
         run: |
           ansible-playbook -i registry-inventory.ini infra/registry/playbook.yml \
             --extra-vars "registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
-
-      - name: Vérifier et récupérer le certificat du registre
-        run: |
-          echo "=== Recherche du certificat registry.crt ==="
-          find . -name "registry.crt" -type f 2>/dev/null
-          # Si le fetch Ansible ne l'a pas mis à la racine, on le récupère via SCP
-          if [ ! -f "registry.crt" ]; then
-            echo "Certificat non trouvé à la racine, récupération via SCP..."
-            scp -o StrictHostKeyChecking=no -i registry-key.pem \
-              ubuntu@${{ env.REGISTRY_IP }}:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
-          fi
-          ls -la registry.crt
-          echo "Certificat récupéré avec succès !"
-
  
       # 4. TERRAFORM APP Créer le serveur applicatif
   
@@ -168,7 +154,7 @@ jobs:
           sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
           sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
           sudo systemctl restart docker
-          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u admin --password-stdin
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u ${{ env.REGISTRY_USER }} --password-stdin
 
       - name: Build et push de l'image API
         working-directory: my-app
@@ -212,7 +198,7 @@ jobs:
       - name: Exécuter le playbook Ansible de l'app
         run: |
           ansible-playbook -i inventory.ini ansible/deploy.yml \
-            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=admin registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
+            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=${{ env.REGISTRY_USER }} registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
 
       # 8. VALIDATION POST-DÉPLOIEMENT
   
@@ -233,11 +219,7 @@ jobs:
   
       - name: Afficher les URLs de l'application
         run: |
-          echo "============================================"
-          echo "  DÉPLOIEMENT TERMINÉ AVEC SUCCÈS !"
-          echo "============================================"
           echo "Frontend : http://${{ env.SERVER_IP }}:3000"
           echo "API      : http://${{ env.SERVER_IP }}:8000"
           echo "Adminer  : http://${{ env.SERVER_IP }}:8080"
           echo "Registre : https://${{ env.REGISTRY_IP }}"
-          echo "============================================"
