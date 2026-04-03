@@ -123,5 +123,3 @@ Amélioration de l'expérience utilisateur avec l'ajout de la fonctionnalité au
 Pour pouvoir inclure des métadonnées, update de la structure du callback onRegisterSuccess.
 
 Pour plus de détails sur la stratégie de tests: [TEST_PLAN.md](/my-app/src/TEST_PLAN.md).
-
-test du 02/04
