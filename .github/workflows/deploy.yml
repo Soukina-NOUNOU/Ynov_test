@@ -122,11 +122,11 @@ jobs:
         run: |
           echo "=== Recherche du certificat registry.crt ==="
           find . -name "registry.crt" -type f 2>/dev/null
-          # Si le fetch Ansible ne l'a pas mis à la racine, on le copie via SCP
+          # Si le fetch Ansible ne l'a pas mis à la racine, on le récupère via SCP
           if [ ! -f "registry.crt" ]; then
-            echo "Certificat non trouvé localement, récupération via SCP..."
+            echo "Certificat non trouvé à la racine, récupération via SCP..."
             scp -o StrictHostKeyChecking=no -i registry-key.pem \
-              ubuntu@${{ env.REGISTRY_IP }}:/home/ubuntu/docker-registry/certs/registry.crt ./registry.crt
+              ubuntu@${{ env.REGISTRY_IP }}:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
           fi
           ls -la registry.crt
           echo "Certificat récupéré avec succès !"
