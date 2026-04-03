@@ -57,9 +57,15 @@ jobs:
           
           # Supprimer les security groups (avec retry car le détachement prend du temps)
           for sg_name in registry-sg-simple-ClickOpster app-sg; do
+            # Vérifier si le SG existe
+            SG_ID=$(aws ec2 describe-security-groups --group-names "$sg_name" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "None")
+            if [ "$SG_ID" = "None" ] || [ -z "$SG_ID" ]; then
+              echo "SG $sg_name n'existe pas, rien à supprimer."
+              continue
+            fi
             for attempt in 1 2 3 4 5; do
-              echo "Tentative $attempt/5 de suppression du SG $sg_name..."
-              if aws ec2 delete-security-group --group-name "$sg_name" 2>&1; then
+              echo "Tentative $attempt/5 de suppression du SG $sg_name ($SG_ID)..."
+              if aws ec2 delete-security-group --group-id "$SG_ID" 2>&1; then
                 echo "SG $sg_name supprimé !"
                 break
               fi
@@ -161,8 +167,9 @@ jobs:
 
       - name: Configurer le certificat du registre et login Docker
         run: |
-          mkdir -p ~/.docker/certs.d/${{ env.REGISTRY_IP }}
-          cp registry.crt ~/.docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
+          sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
+          sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
+          sudo systemctl restart docker
           echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u admin --password-stdin
 
       - name: Build et push de l'image API
