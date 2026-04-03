@@ -120,7 +120,7 @@ jobs:
       - name: Exécuter le playbook Ansible du registre
         run: |
           ansible-playbook -i registry-inventory.ini infra/registry/playbook.yml \
-            --extra-vars "registry_user=${{ env.REGISTRY_USER }} registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
+            --extra-vars "registry_user=${{ secrets.REGISTRY_USER }} registry_admin_password=${{ secrets.REGISTRY_PASSWORD }}"
  
       - name: Vérifier et récupérer le certificat du registre
         run: |
@@ -163,13 +163,11 @@ jobs:
       # 6. BUILD & PUSH Images Docker vers le registre privé
 
       - name: Configurer le certificat du registre et login Docker
-        env:
-          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
         run: |
           sudo mkdir -p /etc/docker/certs.d/${{ env.REGISTRY_IP }}
           sudo cp registry.crt /etc/docker/certs.d/${{ env.REGISTRY_IP }}/ca.crt
           sudo systemctl restart docker
-          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u ${{ env.REGISTRY_USER }} --password-stdin
+          echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ env.REGISTRY_IP }} -u ${{ secrets.REGISTRY_USER }} --password-stdin
 
       - name: Build et push de l'image API
         working-directory: my-app
@@ -213,7 +211,7 @@ jobs:
       - name: Exécuter le playbook Ansible de l'app
         run: |
           ansible-playbook -i inventory.ini ansible/deploy.yml \
-            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=${{ env.REGISTRY_USER }} registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
+            --extra-vars "registry_url=${{ env.REGISTRY_IP }} registry_user=${{ secrets.REGISTRY_USER }} registry_password=${{ secrets.REGISTRY_PASSWORD }} mysql_root_password=${{ secrets.MYSQL_ROOT_PASSWORD }} mysql_database=${{ secrets.MYSQL_DATABASE }}"
 
       # 8. VALIDATION POST-DÉPLOIEMENT
   
