@@ -1,19 +1,23 @@
-version: '3.1'
-
 services:
   db:
     image: mysql:9.6
+    command: >
+      --innodb-buffer-pool-size=64M
+      --innodb-log-file-size=16M
+      --max-connections=20
+      --performance-schema=OFF
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
     volumes:
+      - db-data:/var/lib/mysql
       - ./sqlfiles/:/docker-entrypoint-initdb.d/
     healthcheck:
       test: ["CMD-SHELL", "mysql --user=root --password=$$MYSQL_ROOT_PASSWORD $$MYSQL_DATABASE --execute \"SELECT 1 FROM utilisateur LIMIT 0;\""]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 60s
 
   api:
     image: ${REGISTRY_URL}/api:latest
@@ -49,3 +53,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+volumes:
+  db-data:
