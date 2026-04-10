@@ -32,38 +32,36 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible
 
-      # 0.1 NETTOYAGE — Détruire les anciennes instances
-      - name: Nettoyer les anciennes instances (Registry + App)
+      # 0.1 NETTOYAGE — Détruire uniquement l'ancienne instance App (le registry est persistant)
+      - name: Nettoyer l'ancienne instance App (le Registry est conservé)
         run: |
-          echo "=== Recherche des anciennes instances ==="
+          echo "=== Recherche de l'ancienne instance App ==="
           
-          # Chercher TOUTES les instances (tous les états sauf terminated)
-          ALL_IDS=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=Terraform-Registry-Server,ynov-app-server" \
+          # Chercher UNIQUEMENT les instances App (le registry est persistant, on ne le détruit pas)
+          APP_IDS=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=ynov-app-server" \
             --query "Reservations[*].Instances[?State.Name!='terminated'].InstanceId" --output text)
           
-          if [ -n "$ALL_IDS" ]; then
-            echo "Destruction des instances: $ALL_IDS"
-            aws ec2 terminate-instances --instance-ids $ALL_IDS
+          if [ -n "$APP_IDS" ]; then
+            echo "Destruction des instances App: $APP_IDS"
+            aws ec2 terminate-instances --instance-ids $APP_IDS
             echo "Attente de la terminaison complète..."
-            aws ec2 wait instance-terminated --instance-ids $ALL_IDS
-            echo "Instances terminées."
+            aws ec2 wait instance-terminated --instance-ids $APP_IDS
+            echo "Instances App terminées."
           else
-            echo "Aucune instance trouvée."
+            echo "Aucune instance App trouvée."
           fi
 
           # Attendre que les ENIs soient libérées
           echo "Attente de la libération des ressources réseau (30s)..."
           sleep 30
 
-          # Supprimer les anciennes key pairs
-          echo "Suppression des key pairs..."
-          aws ec2 delete-key-pair --key-name registry_key_terraform && echo "Key pair registry supprimée" || echo "Key pair registry absente ou déjà supprimée"
+          # Supprimer uniquement la key pair de l'App (pas celle du registry)
+          echo "Suppression de la key pair App..."
           aws ec2 delete-key-pair --key-name app_key_terraform && echo "Key pair app supprimée" || echo "Key pair app absente ou déjà supprimée"
           
-          # Supprimer les security groups (avec retry car le détachement prend du temps)
-          for sg_name in registry-sg-simple-ClickOpster app-sg; do
-            # Vérifier si le SG existe
+          # Supprimer uniquement le security group de l'App (pas celui du registry)
+          for sg_name in app-sg; do
             SG_ID=$(aws ec2 describe-security-groups --group-names "$sg_name" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "None")
             if [ "$SG_ID" = "None" ] || [ -z "$SG_ID" ]; then
               echo "SG $sg_name n'existe pas, rien à supprimer."
@@ -82,21 +80,43 @@ jobs:
           
           echo "=== Nettoyage terminé ==="
 
-      # 1. TERRAFORM REGISTRE Créer l'infra du registre Docker
+      # 1. REGISTRE Détecter un registre existant ou en créer un nouveau
+      - name: Détecter le registre Docker existant
+        id: detect-registry
+        run: |
+          echo "=== Recherche d'un registre Docker existant ==="
+          EXISTING_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=Terraform-Registry-Server" "Name=instance-state-name,Values=running" \
+            --query "Reservations[*].Instances[0].PublicIpAddress" --output text)
+
+          if [ -n "$EXISTING_IP" ] && [ "$EXISTING_IP" != "None" ]; then
+            echo "Registre existant détecté : $EXISTING_IP"
+            echo "REGISTRY_EXISTS=true" >> "$GITHUB_ENV"
+            echo "REGISTRY_IP=$EXISTING_IP" >> "$GITHUB_ENV"
+          else
+            echo "Aucun registre existant trouvé. Il sera créé."
+            echo "REGISTRY_EXISTS=false" >> "$GITHUB_ENV"
+          fi
+
+      # 1a. TERRAFORM REGISTRE Uniquement si aucun registre existant
       - name: Terraform Init (Registre)
+        if: env.REGISTRY_EXISTS == 'false'
         working-directory: infra/registry
         run: terraform init
 
       - name: Terraform Apply (Registre)
+        if: env.REGISTRY_EXISTS == 'false'
         working-directory: infra/registry
         run: terraform apply -auto-approve
 
-      # 2. BRIDGE REGISTRE Récupérer IP + clé SSH + inventaire
+      # 1b. BRIDGE REGISTRE — Uniquement si nouveau registre créé
       - name: Exécuter le bridge registre (IP, clé SSH, inventaire)
+        if: env.REGISTRY_EXISTS == 'false'
         run: bash scripts/bridge-registry.sh
 
-      # 3. ANSIBLE REGISTRE Configurer le registre Docker
+      # 1c. ANSIBLE REGISTRE — Uniquement si nouveau registre créé
       - name: Attendre que le serveur registre SSH soit prêt
+        if: env.REGISTRY_EXISTS == 'false'
         run: |
           for i in $(seq 1 30); do
             if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i registry-key.pem ubuntu@$REGISTRY_IP "echo OK" 2>/dev/null; then
@@ -110,24 +130,32 @@ jobs:
           exit 1
 
       - name: Exécuter le playbook Ansible du registre
+        if: env.REGISTRY_EXISTS == 'false'
         run: |
           ansible-playbook -i registry-inventory.ini infra/registry/playbook.yml \
             --extra-vars "registry_user=$SECRET_REG_USER registry_admin_password=$SECRET_REG_PASS"
  
-      - name: Vérifier et récupérer le certificat du registre
+      # 1d. CERTIFICAT Récupération adaptée selon le cas
+      - name: Récupérer le certificat du registre
         run: |
-          echo "=== Recherche du certificat registry.crt ==="
-          find . -name "registry.crt" -type f 2>/dev/null
-          # Si le fetch Ansible ne l'a pas mis à la racine, on le récupère via SCP
-          if [ ! -f "registry.crt" ]; then
-            echo "Certificat non trouvé à la racine, récupération via SCP..."
-            scp -o StrictHostKeyChecking=no -i registry-key.pem \
-              ubuntu@$REGISTRY_IP:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
+          if [ "$REGISTRY_EXISTS" = "true" ]; then
+            echo "=== Récupération du certificat depuis le registre existant (openssl) ==="
+            echo | openssl s_client -connect "$REGISTRY_IP":443 -servername "$REGISTRY_IP" 2>/dev/null \
+              | openssl x509 > registry.crt
+          else
+            echo "=== Récupération du certificat du nouveau registre ==="
+            find . -name "registry.crt" -type f 2>/dev/null
+            # Si le fetch Ansible ne l'a pas mis à la racine, on le récupère via SCP
+            if [ ! -f "registry.crt" ]; then
+              echo "Certificat non trouvé à la racine, récupération via SCP..."
+              scp -o StrictHostKeyChecking=no -i registry-key.pem \
+                ubuntu@$REGISTRY_IP:/home/ubuntu/registry-stack/certs/registry.crt ./registry.crt
+            fi
           fi
           ls -la registry.crt
           echo "Certificat récupéré avec succès !"
       
-      # 4. TERRAFORM APP Créer le serveur applicatif
+      # 2. TERRAFORM APP Créer le serveur applicatif
       - name: Terraform Init (App)
         working-directory: infra/deploy
         run: terraform init
@@ -136,11 +164,11 @@ jobs:
         working-directory: infra/deploy
         run: terraform apply -auto-approve
 
-      # 5. BRIDGE APP Récupérer IP + clé SSH + inventaire
+      # 3. BRIDGE APP Récupérer IP + clé SSH + inventaire
       - name: Exécuter le bridge app (IP, clé SSH, inventaire)
         run: bash scripts/bridge-app.sh
    
-      # 6. BUILD & PUSH Images Docker vers le registre privé
+      # 4. BUILD & PUSH Images Docker vers le registre existant
       - name: Configurer le certificat du registre et login Docker
         run: |
           sudo mkdir -p /etc/docker/certs.d/$REGISTRY_IP
@@ -181,7 +209,7 @@ jobs:
           echo "Timeout: le serveur app SSH n'est pas accessible"
           exit 1
 
-      # 7. ANSIBLE APP Déploiement de l'application
+      # 5. ANSIBLE APP Déploiement de l'application
       - name: Préparer le certificat pour Ansible
         run: cp registry.crt ansible/registry.crt
 
@@ -190,7 +218,7 @@ jobs:
           ansible-playbook -i inventory.ini ansible/deploy.yml \
             --extra-vars "registry_url=$REGISTRY_IP registry_user=$SECRET_REG_USER registry_password=$SECRET_REG_PASS mysql_root_password=$SECRET_DB_ROOT_PASS mysql_database=$SECRET_DB_NAME"
 
-      # 8. VALIDATION POST-DÉPLOIEMENT
+      # 6. VALIDATION POST DÉPLOIEMENT
       - name: Attendre le démarrage des services
         run: sleep 60
 
@@ -204,7 +232,7 @@ jobs:
           curl -f --retry 5 --retry-delay 10 http://$SERVER_IP:8000/users || exit 1
           echo "API OK !"
 
-      # 9. RÉSULTAT URLs de l'application
+      # 7. RÉSULTAT URLs de l'application
       - name: Afficher les URLs de l'application
         run: |
           echo "Frontend : http://$SERVER_IP:3000"
