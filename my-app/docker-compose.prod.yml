@@ -3,7 +3,7 @@ services:
     image: mysql:9.6
     command: >
       --innodb-buffer-pool-size=64M
-      --innodb-log-file-size=16M
+      --innodb-redo-log-capacity=128M
       --max-connections=20
       --performance-schema=OFF
     environment:
