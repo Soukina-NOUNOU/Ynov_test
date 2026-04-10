@@ -16,8 +16,8 @@ services:
       test: ["CMD-SHELL", "mysql --user=root --password=$$MYSQL_ROOT_PASSWORD $$MYSQL_DATABASE --execute \"SELECT 1 FROM utilisateur LIMIT 0;\""]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 60s
+      retries: 5
+      start_period: 30s
 
   api:
     image: ${REGISTRY_URL}/api:latest

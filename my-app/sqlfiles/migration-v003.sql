@@ -10,4 +10,4 @@ VALUES
     ('Lucas', 'Blanc', 'lucas.blanc@orange.fr', '1987-01-14', 'Strasbourg', '67000'),
     ('Camille', 'Petit', 'camille.petit@laposte.net', '1991-09-30', 'Montpellier', '34000'),
     ('Thomas', 'Garcia', 'thomas.garcia@sfr.fr', '1989-04-12', 'Bordeaux', '33000'),
-    ('Léa', 'Rodriguez', 'lea.rodriguez@wanadoo.fr', '1994-06-18', 'Lille', '59000');
+    ('Lea', 'Rodriguez', 'lea.rodriguez@wanadoo.fr', '1994-06-18', 'Lille', '59000');
